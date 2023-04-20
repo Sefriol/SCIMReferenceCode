@@ -129,6 +129,19 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                             throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidParameters);
                         }
 
+                        // ID filter
+                        else if (andFilter.AttributePath.Equals(AttributeNames.Identifier, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (andFilter.FilterOperator != ComparisonOperator.Equals)
+                            {
+                                throw new NotSupportedException(
+                                    string.Format(SystemForCrossDomainIdentityManagementServiceResources.ExceptionFilterOperatorNotSupportedTemplate, andFilter.FilterOperator));
+                            }
+
+                            var id = andFilter.ComparisonValue;
+                            predicateAnd = predicateAnd.And(p => string.Equals(p.Identifier, id, StringComparison.OrdinalIgnoreCase));
+                        }
+
                         // UserName filter
                         else if (andFilter.AttributePath.Equals(AttributeNames.UserName, StringComparison.OrdinalIgnoreCase))
                         {
@@ -172,6 +185,19 @@ namespace Microsoft.SCIM.WebHostSample.Provider
 
                             bool active = bool.Parse(andFilter.ComparisonValue);
                             predicateAnd = predicateAnd.And(p => p.Active == active);
+                        }
+
+                        // DisplayName Filter
+                        else if (andFilter.AttributePath.Equals(AttributeNames.DisplayName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (andFilter.FilterOperator != ComparisonOperator.Equals)
+                            {
+                                throw new NotSupportedException(
+                                    string.Format(SystemForCrossDomainIdentityManagementServiceResources.ExceptionFilterOperatorNotSupportedTemplate, andFilter.FilterOperator));
+                            }
+
+                            var displayName = andFilter.ComparisonValue;
+                            predicateAnd = predicateAnd.And(p => p.DisplayName == displayName);
                         }
 
                         //LastModified filter
