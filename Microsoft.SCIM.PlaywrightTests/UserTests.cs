@@ -5,12 +5,6 @@ using PlaywrightTests.Utils;
 
 namespace PlaywrightTests;
 
-public static class TestContext
-{
-    public static string? User1 { get; set; }
-    public static string? User2 { get; set; }
-}
-
 [TestFixture]
 public class UserTests : PlaywrightTest
 {
@@ -38,9 +32,9 @@ public class UserTests : PlaywrightTest
         Assert.True(userJson.HasValue);
         Assert.True(userJson!.Value.TryGetProperty("id", out var id));
         Assert.That(id.ValueKind, Is.EqualTo(JsonValueKind.String));
-        TestContext.User1 = id.GetString();
-        Assert.False(string.IsNullOrWhiteSpace(TestContext.User1));
-        Assert.Pass($"User with ID '{TestContext.User1}' added!");
+        SharedTestContext.User1 = id.GetString();
+        Assert.False(string.IsNullOrWhiteSpace(SharedTestContext.User1));
+        Assert.Pass($"User with ID '{SharedTestContext.User1}' added!");
     }
 
     [Test, Order(1)]
@@ -60,15 +54,15 @@ public class UserTests : PlaywrightTest
         Assert.True(userJson.HasValue);
         Assert.True(userJson!.Value.TryGetProperty("id", out var id));
         Assert.That(id.ValueKind, Is.EqualTo(JsonValueKind.String));
-        TestContext.User2 = id.GetString();
-        Assert.False(string.IsNullOrWhiteSpace(TestContext.User2));
-        Assert.Pass($"User with ID '{TestContext.User2}' added!");
+        SharedTestContext.User2 = id.GetString();
+        Assert.False(string.IsNullOrWhiteSpace(SharedTestContext.User2));
+        Assert.Pass($"User with ID '{SharedTestContext.User2}' added!");
     }
 
     [Test, Order(2)]
     public async Task GetUser1()
     {
-        var userResponse = await Request.GetAsync($"Users/{TestContext.User1}");
+        var userResponse = await Request.GetAsync($"Users/{SharedTestContext.User1}");
         Assert.True(userResponse.Ok);
         Assert.That(userResponse.Status, Is.EqualTo(200));
 
@@ -76,13 +70,13 @@ public class UserTests : PlaywrightTest
         Assert.True(userJson.HasValue);
         Assert.True(userJson!.Value.TryGetProperty("id", out var id));
         Assert.That(id.ValueKind, Is.EqualTo(JsonValueKind.String));
-        Assert.That(id.ToString(), Is.EqualTo(TestContext.User1));
+        Assert.That(id.ToString(), Is.EqualTo(SharedTestContext.User1));
     }
 
     [Test, Order(2)]
     public async Task GetUser2()
     {
-        var userResponse = await Request.GetAsync($"Users/{TestContext.User2}");
+        var userResponse = await Request.GetAsync($"Users/{SharedTestContext.User2}");
         Assert.True(userResponse.Ok);
         Assert.That(userResponse.Status, Is.EqualTo(200));
 
@@ -90,7 +84,7 @@ public class UserTests : PlaywrightTest
         Assert.True(userJson.HasValue);
         Assert.True(userJson!.Value.TryGetProperty("id", out var id));
         Assert.That(id.ValueKind, Is.EqualTo(JsonValueKind.String));
-        Assert.That(id.ToString(), Is.EqualTo(TestContext.User2));
+        Assert.That(id.ToString(), Is.EqualTo(SharedTestContext.User2));
     }
 
     [Test, Order(2)]
@@ -112,7 +106,7 @@ public class UserTests : PlaywrightTest
             Assert.True(resource.TryGetProperty("id", out var id));
             Assert.That(id.ValueKind, Is.EqualTo(JsonValueKind.String));
             var idValue = id.GetString();
-            Assert.That(idValue, Is.AnyOf([TestContext.User1, TestContext.User2]));
+            Assert.That(idValue, Is.AnyOf([SharedTestContext.User1, SharedTestContext.User2]));
         }
     }
 
@@ -135,7 +129,7 @@ public class UserTests : PlaywrightTest
             Assert.True(resource.TryGetProperty("id", out var id));
             Assert.That(id.ValueKind, Is.EqualTo(JsonValueKind.String));
             var idValue = id.GetString();
-            Assert.That(idValue, Is.EqualTo(TestContext.User1));
+            Assert.That(idValue, Is.EqualTo(SharedTestContext.User1));
         }
     }
 
@@ -143,7 +137,7 @@ public class UserTests : PlaywrightTest
     public async Task PatchUser1()
     {
         var data = await JsonLoader.LoadJsonDataAsync("./json/patch_user1.json");
-        var patchResponse = await Request.PatchAsync($"Users/{TestContext.User1}", new()
+        var patchResponse = await Request.PatchAsync($"Users/{SharedTestContext.User1}", new()
         {
             DataString = data,
             Headers = new KeyValuePair<string, string>[] { new("Content-Type", "application/json") }
@@ -154,7 +148,7 @@ public class UserTests : PlaywrightTest
         var userJson = await patchResponse.JsonAsync();
         Assert.True(userJson.HasValue);
         Assert.True(userJson!.Value.TryGetProperty("id", out var id));
-        Assert.That(id.ToString(), Is.EqualTo(TestContext.User1));
+        Assert.That(id.ToString(), Is.EqualTo(SharedTestContext.User1));
         Assert.True(userJson.Value.TryGetProperty("userName", out var userName));
         Assert.That(userName.GetString(), Is.EqualTo("ryan3"));
     }
@@ -162,14 +156,14 @@ public class UserTests : PlaywrightTest
     [Test, Order(4)]
     public async Task CheckUser1Patch()
     {
-        var patchResponse = await Request.GetAsync($"Users/{TestContext.User1}");
+        var patchResponse = await Request.GetAsync($"Users/{SharedTestContext.User1}");
         Assert.True(patchResponse.Ok);
         Assert.That(patchResponse.Status, Is.EqualTo(200));
 
         var userJson = await patchResponse.JsonAsync();
         Assert.True(userJson.HasValue);
         Assert.True(userJson!.Value.TryGetProperty("id", out var id));
-        Assert.That(id.ToString(), Is.EqualTo(TestContext.User1));
+        Assert.That(id.ToString(), Is.EqualTo(SharedTestContext.User1));
         Assert.True(userJson.Value.TryGetProperty("userName", out var userName));
         Assert.That(userName.GetString(), Is.EqualTo("ryan3"));
     }
@@ -177,9 +171,9 @@ public class UserTests : PlaywrightTest
     [Test, Order(4)]
     public async Task PutUser2()
     {
-        Assert.False(string.IsNullOrWhiteSpace(TestContext.User2));
-        var data = await JsonLoader.LoadJsonDataAsync("./json/put_user2.json", "id2", TestContext.User2!);
-        var putResponse = await Request.PutAsync($"Users/{TestContext.User2}",
+        Assert.False(string.IsNullOrWhiteSpace(SharedTestContext.User2));
+        var data = await JsonLoader.LoadJsonDataAsync("./json/put_user2.json", "id2", SharedTestContext.User2!);
+        var putResponse = await Request.PutAsync($"Users/{SharedTestContext.User2}",
             new()
             {
                 DataString = data,
@@ -191,7 +185,7 @@ public class UserTests : PlaywrightTest
         var userJson = await putResponse.JsonAsync();
         Assert.True(userJson.HasValue);
         Assert.True(userJson!.Value.TryGetProperty("id", out var id));
-        Assert.That(id.ToString(), Is.EqualTo(TestContext.User2));
+        Assert.That(id.ToString(), Is.EqualTo(SharedTestContext.User2));
         Assert.True(userJson.Value.TryGetProperty("userName", out var userName));
         Assert.That(userName.GetString(), Is.EqualTo("UserNameReplace2"));
     }
@@ -199,15 +193,15 @@ public class UserTests : PlaywrightTest
     [Test, Order(5)]
     public async Task CheckUser2Put()
     {
-        Assert.False(string.IsNullOrWhiteSpace(TestContext.User2));
-        var userResponse = await Request.GetAsync($"Users/{TestContext.User2}");
+        Assert.False(string.IsNullOrWhiteSpace(SharedTestContext.User2));
+        var userResponse = await Request.GetAsync($"Users/{SharedTestContext.User2}");
         Assert.True(userResponse.Ok);
         Assert.That(userResponse.Status, Is.EqualTo(200));
 
         var userJson = await userResponse.JsonAsync();
         Assert.True(userJson.HasValue);
         Assert.True(userJson!.Value.TryGetProperty("id", out var id));
-        Assert.That(id.ToString(), Is.EqualTo(TestContext.User2));
+        Assert.That(id.ToString(), Is.EqualTo(SharedTestContext.User2));
         Assert.True(userJson.Value.TryGetProperty("userName", out var userName));
         Assert.That(userName.GetString(), Is.EqualTo("UserNameReplace2"));
     }
@@ -263,15 +257,15 @@ public class UserTests : PlaywrightTest
     [Test]
     public async Task DeleteUser1()
     {
-        var userResponse = await Request.DeleteAsync($"Users/{TestContext.User1}");
+        var userResponse = await Request.DeleteAsync($"Users/{SharedTestContext.User1}");
         Assert.True(userResponse.Ok);
         Assert.That(userResponse.Status, Is.EqualTo(204));
     }
-    
+
     [Test]
     public async Task DeleteUser2()
     {
-        var userResponse = await Request.DeleteAsync($"Users/{TestContext.User2}");
+        var userResponse = await Request.DeleteAsync($"Users/{SharedTestContext.User2}");
         Assert.True(userResponse.Ok);
         Assert.That(userResponse.Status, Is.EqualTo(204));
     }
