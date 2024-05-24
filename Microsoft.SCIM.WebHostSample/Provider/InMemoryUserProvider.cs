@@ -71,7 +71,32 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                 this.storage.Users.Remove(identifier);
                 return Task.FromResult((Resource)user);
             }
+
             throw new CustomHttpResponseException(HttpStatusCode.NotFound);
+        }
+
+        public override async Task<QueryResponseBase> PaginateQueryAsync(IRequest<IQueryParameters> request)
+        {
+            if (null == request)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            IReadOnlyCollection<Resource> resources = await this.QueryAsync(request).ConfigureAwait(false);
+            int totalCount = resources.Count;
+            if (request.Payload.PaginationParameters != null)
+            {
+                int count = request.Payload.PaginationParameters?.Count ?? 0;
+                resources = (IReadOnlyCollection<Resource>)resources.Take(count);
+            }
+
+
+            QueryResponseBase result = new QueryResponse(resources);
+            result.TotalResults = totalCount;
+            result.ItemsPerPage = resources.Count;
+
+            result.StartIndex = resources.Any() ? 1 : null;
+            return result;
         }
 
         public override Task<Resource[]> QueryAsync(IQueryParameters parameters, string correlationIdentifier)
@@ -110,7 +135,6 @@ namespace Microsoft.SCIM.WebHostSample.Provider
             }
             else
             {
-
                 foreach (IFilter queryFilter in parameters.AlternateFilters)
                 {
                     predicateAnd = PredicateBuilder.True<Core2EnterpriseUser>();
@@ -121,16 +145,19 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                     {
                         if (string.IsNullOrWhiteSpace(andFilter.AttributePath))
                         {
-                            throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidParameters);
+                            throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources
+                                .ExceptionInvalidParameters);
                         }
 
                         else if (string.IsNullOrWhiteSpace(andFilter.ComparisonValue))
                         {
-                            throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidParameters);
+                            throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources
+                                .ExceptionInvalidParameters);
                         }
 
                         // ID filter
-                        else if (andFilter.AttributePath.Equals(AttributeNames.Identifier, StringComparison.OrdinalIgnoreCase))
+                        else if (andFilter.AttributePath.Equals(AttributeNames.Identifier,
+                                     StringComparison.OrdinalIgnoreCase))
                         {
                             if (andFilter.FilterOperator != ComparisonOperator.Equals)
                             {
@@ -141,18 +168,21 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                             }
 
                             var id = andFilter.ComparisonValue;
-                            predicateAnd = predicateAnd.And(p => string.Equals(p.Identifier, id, StringComparison.OrdinalIgnoreCase));
+                            predicateAnd = predicateAnd.And(p =>
+                                string.Equals(p.Identifier, id, StringComparison.OrdinalIgnoreCase));
                         }
 
                         // UserName filter
-                        else if (andFilter.AttributePath.Equals(AttributeNames.UserName, StringComparison.OrdinalIgnoreCase))
+                        else if (andFilter.AttributePath.Equals(AttributeNames.UserName,
+                                     StringComparison.OrdinalIgnoreCase))
                         {
                             if (andFilter.FilterOperator != ComparisonOperator.Equals)
                             {
                                 throw new ScimTypeException(ErrorType.invalidFilter,
                                     string.Format(
                                         SystemForCrossDomainIdentityManagementServiceResources
-                                            .ExceptionFilterOperatorNotSupportedTemplate, andFilter.FilterOperator));
+                                            .ExceptionFilterOperatorNotSupportedTemplate,
+                                        andFilter.FilterOperator));
                             }
 
                             string userName = andFilter.ComparisonValue;
@@ -173,13 +203,13 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                             }
 
                             string externalIdentifier = andFilter.ComparisonValue;
-                            predicateAnd = predicateAnd.And(p => string.Equals(p.ExternalIdentifier, externalIdentifier, StringComparison.OrdinalIgnoreCase));
-
-
+                            predicateAnd = predicateAnd.And(p => string.Equals(p.ExternalIdentifier, externalIdentifier,
+                                StringComparison.OrdinalIgnoreCase));
                         }
 
                         //Active Filter
-                        else if (andFilter.AttributePath.Equals(AttributeNames.Active, StringComparison.OrdinalIgnoreCase))
+                        else if (andFilter.AttributePath.Equals(AttributeNames.Active,
+                                     StringComparison.OrdinalIgnoreCase))
                         {
                             if (andFilter.FilterOperator != ComparisonOperator.Equals)
                             {
@@ -194,7 +224,8 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                         }
 
                         // DisplayName Filter
-                        else if (andFilter.AttributePath.Equals(AttributeNames.DisplayName, StringComparison.OrdinalIgnoreCase))
+                        else if (andFilter.AttributePath.Equals(AttributeNames.DisplayName,
+                                     StringComparison.OrdinalIgnoreCase))
                         {
                             if (andFilter.FilterOperator != ComparisonOperator.Equals)
                             {
@@ -245,15 +276,7 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                 results = this.storage.Users.Values.Where(predicate.Compile());
             }
 
-            if (parameters.PaginationParameters != null)
-            {
-                int count = parameters.PaginationParameters.Count.HasValue
-                    ? parameters.PaginationParameters.Count.Value
-                    : 0;
-                return Task.FromResult(results.Take(count).ToArray());
-            }
-            else
-                return Task.FromResult(results.ToArray());
+            return Task.FromResult(results.ToArray());
         }
 
         public override Task<Resource> ReplaceAsync(Resource resource, string correlationIdentifier)
@@ -278,7 +301,9 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                         !string.Equals(exisitingUser.Identifier, user.Identifier, StringComparison.OrdinalIgnoreCase))
             )
             {
-                throw new CustomHttpResponseException(HttpStatusCode.Conflict);
+                throw new ScimTypeException(ErrorType.uniqueness, string.Format(
+                    SystemForCrossDomainIdentityManagementServiceResources
+                        .ExceptionResourceConflict));
             }
 
             Core2EnterpriseUser exisitingUser = this.storage.Users.Values
@@ -339,17 +364,20 @@ namespace Microsoft.SCIM.WebHostSample.Provider
 
             if (null == patch.ResourceIdentifier)
             {
-                throw new ArgumentException(string.Format(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidOperation));
+                throw new ArgumentException(string.Format(SystemForCrossDomainIdentityManagementServiceResources
+                    .ExceptionInvalidOperation));
             }
 
             if (string.IsNullOrWhiteSpace(patch.ResourceIdentifier.Identifier))
             {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidOperation);
+                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources
+                    .ExceptionInvalidOperation);
             }
 
             if (null == patch.PatchRequest)
             {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidOperation);
+                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources
+                    .ExceptionInvalidOperation);
             }
 
             PatchRequest2 patchRequest =
