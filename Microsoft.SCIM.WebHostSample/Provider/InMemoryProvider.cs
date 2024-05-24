@@ -87,6 +87,21 @@ namespace Microsoft.SCIM.WebHostSample.Provider
             throw new NotImplementedException();
         }
 
+        public override Task<QueryResponseBase> PaginateQueryAsync(IRequest<IQueryParameters> request)
+        {
+            if (request.Payload.SchemaIdentifier.Equals(SchemaIdentifiers.Core2EnterpriseUser))
+            {
+                return this.userProvider.PaginateQueryAsync(request);
+            }
+
+            if (request.Payload.SchemaIdentifier.Equals(SchemaIdentifiers.Core2Group))
+            {
+                return this.groupProvider.PaginateQueryAsync(request);
+            }
+
+            throw new NotImplementedException();
+        }
+
         public override Task<Resource> ReplaceAsync(Resource resource, string correlationIdentifier)
         {
             if (resource is Core2EnterpriseUser)
