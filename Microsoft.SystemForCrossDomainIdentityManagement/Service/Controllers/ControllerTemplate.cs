@@ -53,6 +53,10 @@ namespace Microsoft.SCIM
         {
             return StatusCode((int)httpStatusCode, new Core2Error(message, (int)httpStatusCode));
         }
+        protected ObjectResult ScimError(HttpStatusCode httpStatusCode, string message, ErrorType errorType)
+        {
+            return StatusCode((int)httpStatusCode, new Core2Error(message, (int)httpStatusCode, Enum.GetName(errorType)));
+        }
 
         protected virtual bool TryGetMonitor(out IMonitor monitor)
         {
@@ -116,7 +120,7 @@ namespace Microsoft.SCIM
                     monitor.Report(notification);
                 }
 
-                return this.BadRequest();
+                return this.ScimError(HttpStatusCode.BadRequest, argumentException.Message);
             }
             catch (CustomHttpResponseException responseException)
             {
@@ -124,8 +128,17 @@ namespace Microsoft.SCIM
                 {
                     return this.NotFound();
                 }
+                if (this.TryGetMonitor(out IMonitor monitor))
+                {
+                    IExceptionNotification notification =
+                        ExceptionNotificationFactory.Instance.CreateNotification(
+                            responseException.InnerException ?? responseException,
+                            correlationIdentifier,
+                            ServiceNotificationIdentifiers.ControllerTemplateGetException);
+                    monitor.Report(notification);
+                }
 
-                throw;
+                return this.ScimError(HttpStatusCode.InternalServerError, responseException.Message);
             }
             catch (NotImplementedException notImplementedException)
             {
@@ -155,6 +168,20 @@ namespace Microsoft.SCIM
 
                 return this.StatusCode((int)HttpStatusCode.NotImplemented);
             }
+            catch (ScimTypeException scimException)
+            {
+                if (this.TryGetMonitor(out IMonitor monitor))
+                {
+                    IExceptionNotification notification =
+                        ExceptionNotificationFactory.Instance.CreateNotification(
+                            scimException,
+                            correlationIdentifier,
+                            ServiceNotificationIdentifiers.ControllerTemplateDeleteNotSupportedException);
+                    monitor.Report(notification);
+                }
+
+                return this.ScimError(HttpStatusCode.BadRequest, scimException.Message, scimException.ErrorType);
+            }
             catch (Exception exception)
             {
                 if (this.TryGetMonitor(out IMonitor monitor))
@@ -167,7 +194,7 @@ namespace Microsoft.SCIM
                     monitor.Report(notification);
                 }
 
-                throw;
+                return this.ScimError(HttpStatusCode.InternalServerError, exception.Message);
             }
         }
 
@@ -242,6 +269,20 @@ namespace Microsoft.SCIM
                 }
 
                 return this.ScimError(HttpStatusCode.BadRequest, notSupportedException.Message);
+            }
+            catch (ScimTypeException scimException)
+            {
+                if (this.TryGetMonitor(out IMonitor monitor))
+                {
+                    IExceptionNotification notification =
+                        ExceptionNotificationFactory.Instance.CreateNotification(
+                            scimException,
+                            correlationIdentifier,
+                            ServiceNotificationIdentifiers.ControllerTemplateDeleteNotSupportedException);
+                    monitor.Report(notification);
+                }
+
+                return this.ScimError(HttpStatusCode.BadRequest, scimException.Message, scimException.ErrorType);
             }
             catch (CustomHttpResponseException responseException)
             {
@@ -406,6 +447,20 @@ namespace Microsoft.SCIM
 
                 return this.ScimError(HttpStatusCode.BadRequest, notSupportedException.Message);
             }
+            catch (ScimTypeException scimException)
+            {
+                if (this.TryGetMonitor(out IMonitor monitor))
+                {
+                    IExceptionNotification notification =
+                        ExceptionNotificationFactory.Instance.CreateNotification(
+                            scimException,
+                            correlationIdentifier,
+                            ServiceNotificationIdentifiers.ControllerTemplateDeleteNotSupportedException);
+                    monitor.Report(notification);
+                }
+
+                return this.ScimError(HttpStatusCode.BadRequest, scimException.Message, scimException.ErrorType);
+            }
             catch (CustomHttpResponseException responseException)
             {
                 if (responseException?.StatusCode != HttpStatusCode.NotFound)
@@ -496,7 +551,7 @@ namespace Microsoft.SCIM
                     monitor.Report(notification);
                 }
 
-                return this.BadRequest();
+                return this.ScimError(HttpStatusCode.BadRequest, argumentException.Message);
             }
             catch (NotImplementedException notImplementedException)
             {
@@ -526,6 +581,20 @@ namespace Microsoft.SCIM
 
                 return this.StatusCode((int)HttpStatusCode.NotImplemented);
             }
+            catch (ScimTypeException scimException)
+            {
+                if (this.TryGetMonitor(out IMonitor monitor))
+                {
+                    IExceptionNotification notification =
+                        ExceptionNotificationFactory.Instance.CreateNotification(
+                            scimException,
+                            correlationIdentifier,
+                            ServiceNotificationIdentifiers.ControllerTemplateDeleteNotSupportedException);
+                    monitor.Report(notification);
+                }
+
+                return this.ScimError(scimException.ErrorType == ErrorType.uniqueness ? HttpStatusCode.Conflict : HttpStatusCode.BadRequest, scimException.Message, scimException.ErrorType);
+            }
             catch (CustomHttpResponseException responseException)
             {
                 if (responseException?.StatusCode == HttpStatusCode.NotFound)
@@ -545,7 +614,7 @@ namespace Microsoft.SCIM
                     }
                 }
 
-                throw;
+                return this.ScimError(responseException.StatusCode, responseException.Message);
             }
             catch (Exception exception)
             {
@@ -559,7 +628,7 @@ namespace Microsoft.SCIM
                     monitor.Report(notification);
                 }
 
-                throw;
+                return this.StatusCode((int)HttpStatusCode.InternalServerError);
             }
         }
 
@@ -599,7 +668,7 @@ namespace Microsoft.SCIM
                     monitor.Report(notification);
                 }
 
-                return this.BadRequest();
+                return this.ScimError(HttpStatusCode.BadRequest, argumentException.Message);;
             }
             catch (NotImplementedException notImplementedException)
             {
@@ -629,6 +698,20 @@ namespace Microsoft.SCIM
 
                 return this.StatusCode((int)HttpStatusCode.NotImplemented);
             }
+            catch (ScimTypeException scimException)
+            {
+                if (this.TryGetMonitor(out IMonitor monitor))
+                {
+                    IExceptionNotification notification =
+                        ExceptionNotificationFactory.Instance.CreateNotification(
+                            scimException,
+                            correlationIdentifier,
+                            ServiceNotificationIdentifiers.ControllerTemplateDeleteNotSupportedException);
+                    monitor.Report(notification);
+                }
+
+                return this.ScimError(scimException.ErrorType == ErrorType.uniqueness ? HttpStatusCode.Conflict : HttpStatusCode.BadRequest, scimException.Message, scimException.ErrorType);
+            }
             catch (CustomHttpResponseException httpResponseException)
             {
                 if (this.TryGetMonitor(out IMonitor monitor))
@@ -642,9 +725,10 @@ namespace Microsoft.SCIM
                 }
 
                 if (httpResponseException.StatusCode == HttpStatusCode.Conflict)
-                    return this.Conflict();
+                    return this.ScimError(HttpStatusCode.Conflict,
+                        SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidRequest);
                 else
-                    return this.BadRequest();
+                    return this.ScimError(HttpStatusCode.BadRequest, httpResponseException.Message);
             }
             catch (Exception exception)
             {
@@ -658,7 +742,7 @@ namespace Microsoft.SCIM
                     monitor.Report(notification);
                 }
 
-                throw;
+                return this.StatusCode((int)HttpStatusCode.InternalServerError);
             }
         }
 
@@ -735,6 +819,20 @@ namespace Microsoft.SCIM
 
                 return this.ScimError(HttpStatusCode.BadRequest, notSupportedException.Message);
             }
+            catch (ScimTypeException scimException)
+            {
+                if (this.TryGetMonitor(out IMonitor monitor))
+                {
+                    IExceptionNotification notification =
+                        ExceptionNotificationFactory.Instance.CreateNotification(
+                            scimException,
+                            correlationIdentifier,
+                            ServiceNotificationIdentifiers.ControllerTemplateDeleteNotSupportedException);
+                    monitor.Report(notification);
+                }
+
+                return this.ScimError(scimException.ErrorType == ErrorType.uniqueness ? HttpStatusCode.Conflict : HttpStatusCode.BadRequest, scimException.Message, scimException.ErrorType);
+            }
             catch (CustomHttpResponseException httpResponseException)
             {
                 if (this.TryGetMonitor(out IMonitor monitor))
@@ -769,7 +867,7 @@ namespace Microsoft.SCIM
                     monitor.Report(notification);
                 }
 
-                return this.ScimError(HttpStatusCode.InternalServerError, exception.Message);
+                return this.StatusCode((int)HttpStatusCode.InternalServerError);
             }
         }
     }
