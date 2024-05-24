@@ -122,7 +122,7 @@ namespace Microsoft.SCIM.WebHostSample.Provider
 
                 if (queryFilter.FilterOperator != ComparisonOperator.Equals)
                 {
-                    throw new NotSupportedException(string.Format(SystemForCrossDomainIdentityManagementServiceResources.ExceptionFilterOperatorNotSupportedTemplate, queryFilter.FilterOperator));
+                    throw new ScimTypeException(ErrorType.invalidFilter,string.Format(SystemForCrossDomainIdentityManagementServiceResources.ExceptionFilterOperatorNotSupportedTemplate, queryFilter.FilterOperator));
                 }
 
 
@@ -135,7 +135,7 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                 }
                 else
                 {
-                    throw new NotSupportedException(string.Format(SystemForCrossDomainIdentityManagementServiceResources.ExceptionFilterAttributePathNotSupportedTemplate, queryFilter.AttributePath));
+                    throw new ScimTypeException(ErrorType.invalidFilter,string.Format(SystemForCrossDomainIdentityManagementServiceResources.ExceptionFilterAttributePathNotSupportedTemplate, queryFilter.AttributePath));
                 }
             }
 
