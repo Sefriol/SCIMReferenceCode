@@ -49,7 +49,7 @@ namespace Microsoft.SCIM
             }
 
             request =
-                new DeletionRequest(
+                new SystemForCrossDomainIdentityManagementRequest<IResourceIdentifier>(
                     this.BulkRequest.Request,
                     resourceIdentifier.Identifier,
                     this.BulkRequest.CorrelationIdentifier,

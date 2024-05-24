@@ -6,10 +6,10 @@ namespace Microsoft.SCIM
     using System.Collections.Generic;
     using System.Net.Http;
 
-    public abstract class SystemForCrossDomainIdentityManagementRequest<TPayload> : IRequest<TPayload>
+    public class SystemForCrossDomainIdentityManagementRequest<TPayload> : IRequest<TPayload>
         where TPayload : class
     {
-        protected SystemForCrossDomainIdentityManagementRequest(
+        public SystemForCrossDomainIdentityManagementRequest(
             HttpRequestMessage request,
             TPayload payload,
             string correlationIdentifier,

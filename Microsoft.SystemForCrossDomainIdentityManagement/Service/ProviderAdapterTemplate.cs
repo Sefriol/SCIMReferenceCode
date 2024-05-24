@@ -40,7 +40,7 @@ namespace Microsoft.SCIM
             }
 
             IReadOnlyCollection<IExtension> extensions = this.ReadExtensions();
-            IRequest<Resource> creationRequest = new CreationRequest(request, resource, correlationIdentifier, extensions);
+            IRequest<Resource> creationRequest = new SystemForCrossDomainIdentityManagementRequest<Resource>(request, resource, correlationIdentifier, extensions);
             Resource result = await this.Provider.CreateAsync(creationRequest).ConfigureAwait(false);
             return result;
         }
@@ -81,7 +81,7 @@ namespace Microsoft.SCIM
             IReadOnlyCollection<IExtension> extensions = this.ReadExtensions();
             IResourceIdentifier resourceIdentifier = this.CreateResourceIdentifier(identifier);
             IRequest<IResourceIdentifier> deletionRequest =
-                new DeletionRequest(request, resourceIdentifier, correlationIdentifier, extensions);
+                new SystemForCrossDomainIdentityManagementRequest<IResourceIdentifier>(request, resourceIdentifier, correlationIdentifier, extensions);
             await this.Provider.DeleteAsync(deletionRequest).ConfigureAwait(false);
         }
 
@@ -131,7 +131,7 @@ namespace Microsoft.SCIM
             queryParameters.PaginationParameters = paginationParameters;
             IReadOnlyCollection<IExtension> extensions = this.ReadExtensions();
             IRequest<IQueryParameters> queryRequest =
-                new QueryRequest(request, queryParameters, correlationIdentifier, extensions);
+                new SystemForCrossDomainIdentityManagementRequest<IQueryParameters>(request, queryParameters, correlationIdentifier, extensions);
             QueryResponseBase result = await this.Provider.PaginateQueryAsync(queryRequest).ConfigureAwait(false);
 
             return result;
@@ -172,7 +172,7 @@ namespace Microsoft.SCIM
             }
 
             IReadOnlyCollection<IExtension> extensions = this.ReadExtensions();
-            IRequest<Resource> replaceRequest = new ReplaceRequest(request, resource, correlationIdentifier, extensions);
+            IRequest<Resource> replaceRequest = new SystemForCrossDomainIdentityManagementRequest<Resource>(request, resource, correlationIdentifier, extensions);
             Resource result = await this.Provider.ReplaceAsync(replaceRequest).ConfigureAwait(false);
             return result;
         }
@@ -214,7 +214,7 @@ namespace Microsoft.SCIM
                         excludedAttributePaths);
             IReadOnlyCollection<IExtension> extensions = this.ReadExtensions();
             IRequest<IResourceRetrievalParameters> retrievalRequest =
-                new RetrievalRequest(request, retrievalParameters, correlationIdentifier, extensions);
+                new SystemForCrossDomainIdentityManagementRequest<IResourceRetrievalParameters>(request, retrievalParameters, correlationIdentifier, extensions);
             Resource result = await this.Provider.RetrieveAsync(retrievalRequest).ConfigureAwait(false);
             return result;
         }
@@ -243,7 +243,7 @@ namespace Microsoft.SCIM
                     PatchRequest = patchRequest
                 };
             IReadOnlyCollection<IExtension> extensions = this.ReadExtensions();
-            IRequest<IPatch> updateRequest = new UpdateRequest(request, patch, correlationIdentifier, extensions);
+            IRequest<IPatch> updateRequest = new SystemForCrossDomainIdentityManagementRequest<IPatch>(request, patch, correlationIdentifier, extensions);
             await this.Provider.UpdateAsync(updateRequest).ConfigureAwait(false);
         }
     }

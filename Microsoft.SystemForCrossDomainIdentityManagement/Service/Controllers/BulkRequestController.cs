@@ -47,10 +47,10 @@ namespace Microsoft.SCIM
                 }
 
                 IReadOnlyCollection<IExtension> extensions = provider.ReadExtensions();
-                IRequest<BulkRequest2> request2 = new BulkRequest(request, bulkRequest, correlationIdentifier, extensions);
+                IRequest<BulkRequest2> request2 = new SystemForCrossDomainIdentityManagementRequest<BulkRequest2>(request, bulkRequest, correlationIdentifier, extensions);
                 BulkResponse2 result = await provider.ProcessAsync(request2).ConfigureAwait(false);
                 return result;
-                
+
             }
             catch (ArgumentException argumentException)
             {
