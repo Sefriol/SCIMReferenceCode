@@ -134,8 +134,10 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                         {
                             if (andFilter.FilterOperator != ComparisonOperator.Equals)
                             {
-                                throw new NotSupportedException(
-                                    string.Format(SystemForCrossDomainIdentityManagementServiceResources.ExceptionFilterOperatorNotSupportedTemplate, andFilter.FilterOperator));
+                                throw new ScimTypeException(ErrorType.invalidFilter,
+                                    string.Format(
+                                        SystemForCrossDomainIdentityManagementServiceResources
+                                            .ExceptionFilterOperatorNotSupportedTemplate, andFilter.FilterOperator));
                             }
 
                             var id = andFilter.ComparisonValue;
@@ -147,7 +149,7 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                         {
                             if (andFilter.FilterOperator != ComparisonOperator.Equals)
                             {
-                                throw new NotSupportedException(
+                                throw new ScimTypeException(ErrorType.invalidFilter,
                                     string.Format(
                                         SystemForCrossDomainIdentityManagementServiceResources
                                             .ExceptionFilterOperatorNotSupportedTemplate, andFilter.FilterOperator));
@@ -164,8 +166,10 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                         {
                             if (andFilter.FilterOperator != ComparisonOperator.Equals)
                             {
-                                throw new NotSupportedException(
-                                    string.Format(SystemForCrossDomainIdentityManagementServiceResources.ExceptionFilterOperatorNotSupportedTemplate, andFilter.FilterOperator));
+                                throw new ScimTypeException(ErrorType.invalidFilter,
+                                    string.Format(
+                                        SystemForCrossDomainIdentityManagementServiceResources
+                                            .ExceptionFilterOperatorNotSupportedTemplate, andFilter.FilterOperator));
                             }
 
                             string externalIdentifier = andFilter.ComparisonValue;
@@ -179,8 +183,10 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                         {
                             if (andFilter.FilterOperator != ComparisonOperator.Equals)
                             {
-                                throw new NotSupportedException(
-                                    string.Format(SystemForCrossDomainIdentityManagementServiceResources.ExceptionFilterOperatorNotSupportedTemplate, andFilter.FilterOperator));
+                                throw new ScimTypeException(ErrorType.invalidFilter,
+                                    string.Format(
+                                        SystemForCrossDomainIdentityManagementServiceResources
+                                            .ExceptionFilterOperatorNotSupportedTemplate, andFilter.FilterOperator));
                             }
 
                             bool active = bool.Parse(andFilter.ComparisonValue);
@@ -192,8 +198,10 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                         {
                             if (andFilter.FilterOperator != ComparisonOperator.Equals)
                             {
-                                throw new NotSupportedException(
-                                    string.Format(SystemForCrossDomainIdentityManagementServiceResources.ExceptionFilterOperatorNotSupportedTemplate, andFilter.FilterOperator));
+                                throw new ScimTypeException(ErrorType.invalidFilter,
+                                    string.Format(
+                                        SystemForCrossDomainIdentityManagementServiceResources
+                                            .ExceptionFilterOperatorNotSupportedTemplate, andFilter.FilterOperator));
                             }
 
                             var displayName = andFilter.ComparisonValue;
@@ -216,15 +224,16 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                                 predicateAnd = predicateAnd.And(p => p.Metadata.LastModified <= comparisonValue);
                             }
                             else
-                                throw new NotSupportedException(
-                                    string.Format(SystemForCrossDomainIdentityManagementServiceResources.ExceptionFilterOperatorNotSupportedTemplate, andFilter.FilterOperator));
-
-
-
+                                throw new ScimTypeException(ErrorType.invalidFilter,
+                                    string.Format(
+                                        SystemForCrossDomainIdentityManagementServiceResources
+                                            .ExceptionFilterOperatorNotSupportedTemplate, andFilter.FilterOperator));
                         }
                         else
-                            throw new NotSupportedException(
-                                string.Format(SystemForCrossDomainIdentityManagementServiceResources.ExceptionFilterAttributePathNotSupportedTemplate, andFilter.AttributePath));
+                            throw new ScimTypeException(ErrorType.invalidFilter,
+                                string.Format(
+                                    SystemForCrossDomainIdentityManagementServiceResources
+                                        .ExceptionFilterAttributePathNotSupportedTemplate, andFilter.AttributePath));
 
                         currentFilter = andFilter;
                         andFilter = andFilter.AdditionalFilter;

@@ -185,6 +185,7 @@ namespace Microsoft.SCIM
             co,
             sw,
             ew,
+            pr,
             ge,
             gt,
             includes,
@@ -271,8 +272,14 @@ namespace Microsoft.SCIM
                     case ComparisonOperatorValue.bitAnd:
                         this.filterOperator = ComparisonOperator.BitAnd;
                         break;
+                    case ComparisonOperatorValue.sw:
+                        this.filterOperator = ComparisonOperator.StartsWith;
+                        break;
                     case ComparisonOperatorValue.ew:
                         this.filterOperator = ComparisonOperator.EndsWith;
+                        break;
+                    case ComparisonOperatorValue.pr:
+                        this.filterOperator = ComparisonOperator.Present;
                         break;
                     case ComparisonOperatorValue.eq:
                         this.filterOperator = ComparisonOperator.Equals;
@@ -288,6 +295,9 @@ namespace Microsoft.SCIM
                         break;
                     case ComparisonOperatorValue.lt:
                         this.filterOperator = ComparisonOperator.LessThan;
+                        break;
+                    case ComparisonOperatorValue.co:
+                        this.filterOperator = ComparisonOperator.Contains;
                         break;
                     case ComparisonOperatorValue.includes:
                         this.filterOperator = ComparisonOperator.Includes;
@@ -309,7 +319,7 @@ namespace Microsoft.SCIM
                         break;
                     default:
                         string notSupported = Enum.GetName(typeof(ComparisonOperatorValue), this.Operator);
-                        throw new NotSupportedException(notSupported);
+                        throw new ScimTypeException(ErrorType.invalidFilter,string.Format(SystemForCrossDomainIdentityManagementServiceResources.ExceptionFilterOperatorNotSupportedTemplate, notSupported));
                 }
                 this.comparisonOperator = value;
             }
