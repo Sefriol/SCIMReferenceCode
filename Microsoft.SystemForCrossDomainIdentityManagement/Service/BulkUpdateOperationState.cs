@@ -141,7 +141,7 @@ namespace Microsoft.SCIM
                 };
             IRequest<IPatch> requestBuffer =
                 new SystemForCrossDomainIdentityManagementRequest<IPatch>(
-                    this.BulkRequest.Request,
+                    this.BulkRequest.HttpContext,
                     patch,
                     this.BulkRequest.CorrelationIdentifier,
                     this.BulkRequest.Extensions);

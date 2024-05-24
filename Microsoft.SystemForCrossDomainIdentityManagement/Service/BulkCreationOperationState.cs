@@ -136,7 +136,7 @@ namespace Microsoft.SCIM
                     throw new ArgumentException(invalidOperationExceptionMessage);
                 }
                 this.creationRequest =
-                        new SystemForCrossDomainIdentityManagementRequest<Resource>(request.Request, resource, request.CorrelationIdentifier,
+                        new SystemForCrossDomainIdentityManagementRequest<Resource>(request.HttpContext, resource, request.CorrelationIdentifier,
                         request.Extensions);
             }
             else
