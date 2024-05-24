@@ -50,7 +50,7 @@ namespace Microsoft.SCIM
 
             request =
                 new SystemForCrossDomainIdentityManagementRequest<IResourceIdentifier>(
-                    this.BulkRequest.Request,
+                    this.BulkRequest.HttpContext,
                     resourceIdentifier.Identifier,
                     this.BulkRequest.CorrelationIdentifier,
                     this.BulkRequest.Extensions);

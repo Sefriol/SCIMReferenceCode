@@ -17,9 +17,9 @@ namespace Microsoft.SCIM.WebHostSample.Provider
             new Lazy<IReadOnlyCollection<TypeScheme>>(
                 () =>
                     new TypeScheme[]
-                    { 
+                    {
                         SampleTypeScheme.UserTypeScheme,
-                        SampleTypeScheme.GroupTypeScheme, 
+                        SampleTypeScheme.GroupTypeScheme,
                         SampleTypeScheme.EnterpriseUserTypeScheme,
                         SampleTypeScheme.ResourceTypesTypeScheme,
                         SampleTypeScheme.SchemaTypeScheme,
@@ -39,9 +39,9 @@ namespace Microsoft.SCIM.WebHostSample.Provider
         }
 
         public override IReadOnlyCollection<Core2ResourceType> ResourceTypes => InMemoryProvider.Types.Value;
-       
+
         public override IReadOnlyCollection<TypeScheme> Schema => InMemoryProvider.TypeSchema.Value;
-        
+
         public override Task<Resource> CreateAsync(Resource resource, string correlationIdentifier)
         {
             if (resource is Core2EnterpriseUser)
@@ -57,7 +57,7 @@ namespace Microsoft.SCIM.WebHostSample.Provider
             throw new NotImplementedException();
         }
 
-        public override Task DeleteAsync(IResourceIdentifier resourceIdentifier, string correlationIdentifier)
+        public override Task<Resource> DeleteAsync(IResourceIdentifier resourceIdentifier, string correlationIdentifier)
         {
             if (resourceIdentifier.SchemaIdentifier.Equals(SchemaIdentifiers.Core2EnterpriseUser))
             {
@@ -117,7 +117,7 @@ namespace Microsoft.SCIM.WebHostSample.Provider
             throw new NotImplementedException();
         }
 
-        public override Task UpdateAsync(IPatch patch, string correlationIdentifier)
+        public override Task<Resource> UpdateAsync(IPatch patch, string correlationIdentifier)
         {
             if (patch == null)
             {

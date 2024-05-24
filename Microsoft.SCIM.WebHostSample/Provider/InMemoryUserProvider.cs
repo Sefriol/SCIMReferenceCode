@@ -8,7 +8,6 @@ namespace Microsoft.SCIM.WebHostSample.Provider
     using System.Linq.Expressions;
     using System.Net;
     using System.Threading.Tasks;
-    using System.Web.Http;
     using Microsoft.SCIM;
 
     public class InMemoryUserProvider : ProviderBase
@@ -24,13 +23,13 @@ namespace Microsoft.SCIM.WebHostSample.Provider
         {
             if (resource.Identifier != null)
             {
-                throw new HttpResponseException(HttpStatusCode.BadRequest);
+                throw new CustomHttpResponseException(HttpStatusCode.BadRequest);
             }
 
             Core2EnterpriseUser user = resource as Core2EnterpriseUser;
             if (string.IsNullOrWhiteSpace(user.UserName))
             {
-                throw new HttpResponseException(HttpStatusCode.BadRequest);
+                throw new CustomHttpResponseException(HttpStatusCode.BadRequest);
             }
 
             IEnumerable<Core2EnterpriseUser> exisitingUsers = this.storage.Users.Values;
@@ -41,14 +40,14 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                         string.Equals(exisitingUser.UserName, user.UserName, StringComparison.Ordinal))
             )
             {
-                throw new HttpResponseException(HttpStatusCode.Conflict);
+                throw new CustomHttpResponseException(HttpStatusCode.Conflict);
             }
 
             // Update metadata
             DateTime created = DateTime.UtcNow;
             user.Metadata.Created = created;
-            user.Metadata.LastModified = created; 
-            
+            user.Metadata.LastModified = created;
+
             string resourceIdentifier = Guid.NewGuid().ToString();
             resource.Identifier = resourceIdentifier;
             this.storage.Users.Add(resourceIdentifier, user);
@@ -56,21 +55,23 @@ namespace Microsoft.SCIM.WebHostSample.Provider
             return Task.FromResult(resource);
         }
 
-        public override Task DeleteAsync(IResourceIdentifier resourceIdentifier, string correlationIdentifier)
+        public override Task<Resource> DeleteAsync(IResourceIdentifier resourceIdentifier,
+            string correlationIdentifier)
         {
             if (string.IsNullOrWhiteSpace(resourceIdentifier?.Identifier))
             {
-                throw new HttpResponseException(HttpStatusCode.BadRequest);
+                throw new CustomHttpResponseException(HttpStatusCode.BadRequest);
             }
 
             string identifier = resourceIdentifier.Identifier;
 
             if (this.storage.Users.ContainsKey(identifier))
             {
+                Core2EnterpriseUser user = this.storage.Users[identifier];
                 this.storage.Users.Remove(identifier);
+                return Task.FromResult((Resource)user);
             }
-
-            return Task.CompletedTask;
+            throw new CustomHttpResponseException(HttpStatusCode.NotFound);
         }
 
         public override Task<Resource[]> QueryAsync(IQueryParameters parameters, string correlationIdentifier)
@@ -87,12 +88,14 @@ namespace Microsoft.SCIM.WebHostSample.Provider
 
             if (null == parameters.AlternateFilters)
             {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidParameters);
+                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources
+                    .ExceptionInvalidParameters);
             }
 
             if (string.IsNullOrWhiteSpace(parameters.SchemaIdentifier))
             {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidParameters);
+                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources
+                    .ExceptionInvalidParameters);
             }
 
             IEnumerable<Resource> results;
@@ -132,17 +135,19 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                             if (andFilter.FilterOperator != ComparisonOperator.Equals)
                             {
                                 throw new NotSupportedException(
-                                    string.Format(SystemForCrossDomainIdentityManagementServiceResources.ExceptionFilterOperatorNotSupportedTemplate, andFilter.FilterOperator));
+                                    string.Format(
+                                        SystemForCrossDomainIdentityManagementServiceResources
+                                            .ExceptionFilterOperatorNotSupportedTemplate, andFilter.FilterOperator));
                             }
 
                             string userName = andFilter.ComparisonValue;
-                            predicateAnd = predicateAnd.And(p => string.Equals(p.UserName, userName, StringComparison.OrdinalIgnoreCase));
-
-                           
+                            predicateAnd = predicateAnd.And(p =>
+                                string.Equals(p.UserName, userName, StringComparison.OrdinalIgnoreCase));
                         }
 
                         // ExternalId filter
-                        else if (andFilter.AttributePath.Equals(AttributeNames.ExternalIdentifier, StringComparison.OrdinalIgnoreCase))
+                        else if (andFilter.AttributePath.Equals(AttributeNames.ExternalIdentifier,
+                                     StringComparison.OrdinalIgnoreCase))
                         {
                             if (andFilter.FilterOperator != ComparisonOperator.Equals)
                             {
@@ -153,7 +158,7 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                             string externalIdentifier = andFilter.ComparisonValue;
                             predicateAnd = predicateAnd.And(p => string.Equals(p.ExternalIdentifier, externalIdentifier, StringComparison.OrdinalIgnoreCase));
 
-                           
+
                         }
 
                         //Active Filter
@@ -167,25 +172,22 @@ namespace Microsoft.SCIM.WebHostSample.Provider
 
                             bool active = bool.Parse(andFilter.ComparisonValue);
                             predicateAnd = predicateAnd.And(p => p.Active == active);
-
                         }
 
                         //LastModified filter
-                        else if (andFilter.AttributePath.Equals($"{AttributeNames.Metadata}.{AttributeNames.LastModified}", StringComparison.OrdinalIgnoreCase))
+                        else if (andFilter.AttributePath.Equals(
+                                     $"{AttributeNames.Metadata}.{AttributeNames.LastModified}",
+                                     StringComparison.OrdinalIgnoreCase))
                         {
                             if (andFilter.FilterOperator == ComparisonOperator.EqualOrGreaterThan)
                             {
                                 DateTime comparisonValue = DateTime.Parse(andFilter.ComparisonValue).ToUniversalTime();
                                 predicateAnd = predicateAnd.And(p => p.Metadata.LastModified >= comparisonValue);
-
-                               
                             }
                             else if (andFilter.FilterOperator == ComparisonOperator.EqualOrLessThan)
                             {
                                 DateTime comparisonValue = DateTime.Parse(andFilter.ComparisonValue).ToUniversalTime();
                                 predicateAnd = predicateAnd.And(p => p.Metadata.LastModified <= comparisonValue);
-
-                                
                             }
                             else
                                 throw new NotSupportedException(
@@ -200,11 +202,9 @@ namespace Microsoft.SCIM.WebHostSample.Provider
 
                         currentFilter = andFilter;
                         andFilter = andFilter.AdditionalFilter;
-
                     } while (currentFilter.AdditionalFilter != null);
 
                     predicate = predicate.Or(predicateAnd);
-
                 }
 
                 results = this.storage.Users.Values.Where(predicate.Compile());
@@ -212,7 +212,9 @@ namespace Microsoft.SCIM.WebHostSample.Provider
 
             if (parameters.PaginationParameters != null)
             {
-                int count = parameters.PaginationParameters.Count.HasValue ? parameters.PaginationParameters.Count.Value : 0;
+                int count = parameters.PaginationParameters.Count.HasValue
+                    ? parameters.PaginationParameters.Count.Value
+                    : 0;
                 return Task.FromResult(results.Take(count).ToArray());
             }
             else
@@ -223,14 +225,14 @@ namespace Microsoft.SCIM.WebHostSample.Provider
         {
             if (resource.Identifier == null)
             {
-                throw new HttpResponseException(HttpStatusCode.BadRequest);
+                throw new CustomHttpResponseException(HttpStatusCode.BadRequest);
             }
 
             Core2EnterpriseUser user = resource as Core2EnterpriseUser;
 
             if (string.IsNullOrWhiteSpace(user.UserName))
             {
-                throw new HttpResponseException(HttpStatusCode.BadRequest);
+                throw new CustomHttpResponseException(HttpStatusCode.BadRequest);
             }
 
             if
@@ -241,7 +243,7 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                         !string.Equals(exisitingUser.Identifier, user.Identifier, StringComparison.OrdinalIgnoreCase))
             )
             {
-                throw new HttpResponseException(HttpStatusCode.Conflict);
+                throw new CustomHttpResponseException(HttpStatusCode.Conflict);
             }
 
             Core2EnterpriseUser exisitingUser = this.storage.Users.Values
@@ -251,7 +253,7 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                 );
             if (exisitingUser == null)
             {
-                throw new HttpResponseException(HttpStatusCode.NotFound);
+                throw new CustomHttpResponseException(HttpStatusCode.NotFound);
             }
 
             // Update metadata
@@ -259,11 +261,11 @@ namespace Microsoft.SCIM.WebHostSample.Provider
             user.Metadata.LastModified = DateTime.UtcNow;
 
             this.storage.Users[user.Identifier] = user;
-            Resource result = user as Resource;
-            return Task.FromResult(result);
+            return Task.FromResult(user as Resource);
         }
 
-        public override Task<Resource> RetrieveAsync(IResourceRetrievalParameters parameters, string correlationIdentifier)
+        public override Task<Resource> RetrieveAsync(IResourceRetrievalParameters parameters,
+            string correlationIdentifier)
         {
             if (parameters == null)
             {
@@ -280,22 +282,20 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                 throw new ArgumentNullException(nameof(parameters));
             }
 
-            Resource result = null;
             string identifier = parameters.ResourceIdentifier.Identifier;
 
             if (this.storage.Users.ContainsKey(identifier))
             {
                 if (this.storage.Users.TryGetValue(identifier, out Core2EnterpriseUser user))
                 {
-                    result = user as Resource;
-                    return Task.FromResult(result);
+                    return Task.FromResult(user as Resource);
                 }
             }
 
-            throw new HttpResponseException(HttpStatusCode.NotFound);
+            throw new CustomHttpResponseException(HttpStatusCode.NotFound);
         }
 
-        public override Task UpdateAsync(IPatch patch, string correlationIdentifier)
+        public override Task<Resource> UpdateAsync(IPatch patch, string correlationIdentifier)
         {
             if (null == patch)
             {
@@ -335,10 +335,10 @@ namespace Microsoft.SCIM.WebHostSample.Provider
             }
             else
             {
-                throw new HttpResponseException(HttpStatusCode.NotFound);
+                throw new CustomHttpResponseException(HttpStatusCode.NotFound);
             }
 
-            return Task.CompletedTask;
+            return Task.FromResult<Resource>(user);
         }
     }
 }
