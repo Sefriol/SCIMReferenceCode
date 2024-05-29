@@ -87,7 +87,7 @@ namespace Microsoft.SCIM.WebHostSample.Provider
             throw new NotImplementedException();
         }
 
-        public override Task<QueryResponseBase> PaginateQueryAsync(IRequest<IQueryParameters> request)
+        public override Task<QueryResponse> PaginateQueryAsync(IRequest<IQueryParameters> request)
         {
             if (request.Payload.SchemaIdentifier.Equals(SchemaIdentifiers.Core2EnterpriseUser))
             {

@@ -75,7 +75,7 @@ namespace Microsoft.SCIM.WebHostSample.Provider
             throw new CustomHttpResponseException(HttpStatusCode.NotFound);
         }
 
-        public override async Task<QueryResponseBase> PaginateQueryAsync(IRequest<IQueryParameters> request)
+        public override async Task<QueryResponse> PaginateQueryAsync(IRequest<IQueryParameters> request)
         {
             if (null == request)
             {
@@ -91,7 +91,7 @@ namespace Microsoft.SCIM.WebHostSample.Provider
             }
 
 
-            QueryResponseBase result = new QueryResponse(resources);
+            QueryResponse result = new QueryResponse(resources);
             result.TotalResults = totalCount;
             result.ItemsPerPage = resources.Count;
 

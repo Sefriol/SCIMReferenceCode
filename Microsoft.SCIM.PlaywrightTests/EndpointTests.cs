@@ -10,7 +10,7 @@ public class EndpointTests : PlaywrightTest
     private IAPIRequestContext? Request;
     static string PROTOCOL = Environment.GetEnvironmentVariable("PROTOCOL") ?? "http";
     static string SERVER = Environment.GetEnvironmentVariable("SERVER") ?? "localhost";
-    static string PORT = Environment.GetEnvironmentVariable("PORT") ?? ":5000";
+    static string PORT = Environment.GetEnvironmentVariable("PORT") ?? ":5211";
     static string API = Environment.GetEnvironmentVariable("API") ?? "scim";
     private static string _baseUrl = $"{PROTOCOL}://{SERVER}{PORT}/{API}/";
 

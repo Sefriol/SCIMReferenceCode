@@ -19,7 +19,7 @@ namespace Microsoft.SCIM
         {
         }
 
-        public ActionResult<QueryResponseBase> Get()
+        public ActionResult<QueryResponse> Get()
         {
             string correlationIdentifier = null;
 
@@ -38,7 +38,7 @@ namespace Microsoft.SCIM
                 }
 
                 IReadOnlyCollection<Resource> resources = provider.Schema;
-                QueryResponseBase result = new QueryResponse(resources);
+                QueryResponse result = new QueryResponse(resources);
 
                 result.TotalResults =
                     result.ItemsPerPage =

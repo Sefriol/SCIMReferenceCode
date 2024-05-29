@@ -203,7 +203,7 @@ namespace Microsoft.SCIM
             MessageId = "Get",
             Justification =
                 "The names of the methods of a controller must correspond to the names of hypertext markup verbs")]
-        public virtual async Task<ActionResult<QueryResponseBase>> Get()
+        public virtual async Task<ActionResult<QueryResponse>> Get()
         {
             string correlationIdentifier = null;
             try
@@ -216,7 +216,7 @@ namespace Microsoft.SCIM
 
                 IResourceQuery resourceQuery = new ResourceQuery(HttpContext);
                 IProviderAdapter<T> provider = this.AdaptProvider();
-                QueryResponseBase result =
+                QueryResponse result =
                     await provider
                         .Query(
                             httpContext,
@@ -361,7 +361,7 @@ namespace Microsoft.SCIM
                             resourceQuery.Attributes,
                             resourceQuery.ExcludedAttributes);
                     IProviderAdapter<T> provider = this.AdaptProvider();
-                    QueryResponseBase queryResponse =
+                    QueryResponse queryResponse =
                         await provider
                             .Query(
                                 httpContext,

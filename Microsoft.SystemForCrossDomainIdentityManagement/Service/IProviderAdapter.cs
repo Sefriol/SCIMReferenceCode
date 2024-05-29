@@ -12,7 +12,7 @@ namespace Microsoft.SCIM
 
         Task<Resource> Create(HttpContext httpContext, Resource resource, string correlationIdentifier);
         Task<Resource> Delete(HttpContext httpContext, string identifier, string correlationIdentifier);
-        Task<QueryResponseBase> Query(
+        Task<QueryResponse> Query(
             HttpContext httpContext,
             IReadOnlyCollection<IFilter> filters,
             IReadOnlyCollection<string> requestedAttributePaths,

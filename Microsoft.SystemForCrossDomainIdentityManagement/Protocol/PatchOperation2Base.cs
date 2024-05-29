@@ -9,7 +9,7 @@ namespace Microsoft.SCIM
     using System.Runtime.Serialization;
 
     [DataContract]
-    public abstract class PatchOperation2Base : IPatchOperation2Base
+    public abstract class PatchOperation2Base
     {
         private const string Template = "{0} {1}";
 

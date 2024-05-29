@@ -7,7 +7,14 @@ namespace Microsoft.SCIM
     using System.Runtime.Serialization;
 
     [DataContract]
-    public sealed class ElectronicMailAddress : ElectronicMailAddressBase
+    public class ElectronicMailAddress : TypedValue
     {
+        internal ElectronicMailAddress()
+        {
+        }
+
+        public const string Home = "home";
+        public const string Other = "other";
+        public const string Work = "work";
     }
 }

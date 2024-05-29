@@ -97,7 +97,7 @@ namespace Microsoft.SCIM
             return result;
         }
 
-        public virtual async Task<QueryResponseBase> Query(
+        public virtual async Task<QueryResponse> Query(
             HttpContext httpContext,
             IReadOnlyCollection<IFilter> filters,
             IReadOnlyCollection<string> requestedAttributePaths,
@@ -132,7 +132,7 @@ namespace Microsoft.SCIM
             IReadOnlyCollection<IExtension> extensions = this.ReadExtensions();
             IRequest<IQueryParameters> queryRequest =
                 new SystemForCrossDomainIdentityManagementRequest<IQueryParameters>(httpContext, queryParameters, correlationIdentifier, extensions);
-            QueryResponseBase result = await this.Provider.PaginateQueryAsync(queryRequest).ConfigureAwait(false);
+            QueryResponse result = await this.Provider.PaginateQueryAsync(queryRequest).ConfigureAwait(false);
 
             return result;
         }

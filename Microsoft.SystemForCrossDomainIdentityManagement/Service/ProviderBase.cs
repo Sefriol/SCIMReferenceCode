@@ -60,22 +60,6 @@ namespace Microsoft.SCIM
             }
         }
 
-        public virtual IResourceJsonDeserializingFactory<GroupBase> GroupDeserializationBehavior
-        {
-            get
-            {
-                return null;
-            }
-        }
-
-        public virtual ISchematizedJsonDeserializingFactory<PatchRequest2> PatchRequestDeserializationBehavior
-        {
-            get
-            {
-                return null;
-            }
-        }
-
         public virtual IReadOnlyCollection<Core2ResourceType> ResourceTypes
         {
             get
@@ -99,14 +83,6 @@ namespace Microsoft.SCIM
         //        return null;
         //    }
         //}
-
-        public virtual IResourceJsonDeserializingFactory<Core2UserBase> UserDeserializationBehavior
-        {
-            get
-            {
-                return null;
-            }
-        }
 
         public abstract Task<Resource> CreateAsync(Resource resource, string correlationIdentifier);
 
@@ -154,7 +130,7 @@ namespace Microsoft.SCIM
             return await this.DeleteAsync(request.Payload, request.CorrelationIdentifier).ConfigureAwait(false);
         }
 
-        public virtual async Task<QueryResponseBase> PaginateQueryAsync(IRequest<IQueryParameters> request)
+        public virtual async Task<QueryResponse> PaginateQueryAsync(IRequest<IQueryParameters> request)
         {
             if (null == request)
             {
@@ -162,7 +138,7 @@ namespace Microsoft.SCIM
             }
 
             IReadOnlyCollection<Resource> resources = await this.QueryAsync(request).ConfigureAwait(false);
-            QueryResponseBase result = new QueryResponse(resources);
+            QueryResponse result = new QueryResponse(resources);
             result.TotalResults =
                 result.ItemsPerPage =
                     resources.Count;

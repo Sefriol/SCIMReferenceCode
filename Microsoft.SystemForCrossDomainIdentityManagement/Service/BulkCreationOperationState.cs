@@ -59,7 +59,7 @@ namespace Microsoft.SCIM
 
                 if (operationData.IsResourceType(SchemaIdentifiers.Core2User))
                 {
-                    Core2EnterpriseUserBase user = operationDataJson.ToObject<Core2EnterpriseUser>();
+                    Core2EnterpriseUser user = operationDataJson.ToObject<Core2EnterpriseUser>();
                     resource = user;
                     if (user.EnterpriseExtension.Manager != null)
                     {
