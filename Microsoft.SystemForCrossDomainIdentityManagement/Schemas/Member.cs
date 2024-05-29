@@ -9,7 +9,7 @@ namespace Microsoft.SCIM
     [DataContract]
     public sealed class Member
     {
-        internal Member()
+        public Member()
         {
         }
 
