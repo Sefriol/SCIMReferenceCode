@@ -4,9 +4,6 @@
 
 namespace Microsoft.SCIM
 {
-    using System.Runtime.Serialization;
-
-    [DataContract]
     public abstract class InstantMessaging : TypedValue
     {
         public const string Aim = "aim";
@@ -18,7 +15,7 @@ namespace Microsoft.SCIM
         public const string Xmpp = "xmpp";
         public const string Yahoo = "yahoo";
 
-        internal InstantMessaging()
+        public InstantMessaging()
         {
         }
     }

@@ -10,7 +10,7 @@ namespace Microsoft.SCIM.WebHostSample.Provider
     using System.Threading.Tasks;
     using Microsoft.SCIM;
 
-    public class InMemoryGroupProvider : ProviderBase
+    public class InMemoryGroupProvider : ProviderBase<Core2Group>
     {
         private readonly InMemoryStorage storage;
 
@@ -19,7 +19,7 @@ namespace Microsoft.SCIM.WebHostSample.Provider
             this.storage = InMemoryStorage.Instance;
         }
 
-        public override Task<Resource>CreateAsync(Resource resource, string correlationIdentifier)
+        public override Task<Core2Group>CreateAsync(Core2Group resource, string correlationIdentifier)
         {
             if (resource.Identifier != null)
             {
@@ -55,7 +55,7 @@ namespace Microsoft.SCIM.WebHostSample.Provider
             return Task.FromResult(resource);
         }
 
-        public override Task<Resource> DeleteAsync(IResourceIdentifier resourceIdentifier,
+        public override Task<Core2Group> DeleteAsync(IResourceIdentifier resourceIdentifier,
             string correlationIdentifier)
         {
             if (string.IsNullOrWhiteSpace(resourceIdentifier?.Identifier))
@@ -69,12 +69,12 @@ namespace Microsoft.SCIM.WebHostSample.Provider
             {
                 var group = this.storage.Groups[identifier];
                 this.storage.Groups.Remove(identifier);
-                return Task.FromResult(group as Resource);
+                return Task.FromResult(group);
             }
             throw new CustomHttpResponseException(HttpStatusCode.NotFound);
         }
 
-        public override Task<Resource[]> QueryAsync(IQueryParameters parameters, string correlationIdentifier)
+        public override Task<Core2Group[]> QueryAsync(IQueryParameters parameters, string correlationIdentifier)
         {
             if (parameters == null)
             {
@@ -96,7 +96,7 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                 throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidParameters);
             }
 
-            IEnumerable<Resource> results;
+            IEnumerable<Core2Group> results;
             IFilter queryFilter = parameters.AlternateFilters.SingleOrDefault();
 
             var predicate = PredicateBuilder.False<Core2Group>();
@@ -105,8 +105,7 @@ namespace Microsoft.SCIM.WebHostSample.Provider
 
             if (queryFilter == null)
             {
-                results = this.storage.Groups.Values.Select(
-                    (Core2Group user) => user as Resource);
+                results = this.storage.Groups.Values.Select((Core2Group group) => group);
             }
             else
             {
@@ -145,7 +144,7 @@ namespace Microsoft.SCIM.WebHostSample.Provider
             return Task.FromResult(results.ToArray());
         }
 
-        public override Task<Resource> ReplaceAsync(Resource resource, string correlationIdentifier)
+        public override Task<Core2Group> ReplaceAsync(Core2Group resource, string correlationIdentifier)
         {
             if (resource.Identifier == null)
             {
@@ -181,11 +180,11 @@ namespace Microsoft.SCIM.WebHostSample.Provider
             group.Metadata.LastModified = DateTime.UtcNow;
 
             this.storage.Groups[group.Identifier] = group;
-            Resource result = group as Resource;
+            Core2Group result = group;
             return Task.FromResult(result);
         }
 
-        public override Task<Resource> RetrieveAsync(IResourceRetrievalParameters parameters, string correlationIdentifier)
+        public override Task<Core2Group> RetrieveAsync(IResourceRetrievalParameters parameters, string correlationIdentifier)
         {
             if (parameters == null)
             {
@@ -208,14 +207,13 @@ namespace Microsoft.SCIM.WebHostSample.Provider
             {
                 if (this.storage.Groups.TryGetValue(identifier, out Core2Group group))
                 {
-                    Resource result = group as Resource;
-                    return Task.FromResult(result);
+                    return Task.FromResult(group);
                 }
             }
             throw new CustomHttpResponseException(HttpStatusCode.NotFound);
         }
 
-        public override Task<Resource> UpdateAsync(IPatch patch, string correlationIdentifier)
+        public override Task<Core2Group> UpdateAsync(IPatch patch, string correlationIdentifier)
         {
             if (null == patch)
             {
@@ -257,7 +255,7 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                 throw new CustomHttpResponseException(HttpStatusCode.NotFound);
             }
 
-            return Task.FromResult(group as Resource);
+            return Task.FromResult(group);
         }
     }
 }

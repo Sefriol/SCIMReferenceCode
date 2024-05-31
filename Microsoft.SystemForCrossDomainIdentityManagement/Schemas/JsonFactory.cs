@@ -6,7 +6,7 @@ namespace Microsoft.SCIM
 {
     using System;
     using System.Collections.Generic;
-    using Newtonsoft.Json;
+
 
     public abstract class JsonFactory
     {
@@ -104,7 +104,7 @@ namespace Microsoft.SCIM
                 try
                 {
                     Dictionary<string, object> result =
-                        JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
+                        System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(json);
                     return result;
                 }
                 finally
@@ -114,25 +114,25 @@ namespace Microsoft.SCIM
 
             public override string Create(string[] json)
             {
-                string result = JsonConvert.SerializeObject(json);
+                string result = System.Text.Json.JsonSerializer.Serialize(json);
                 return result;
             }
 
             public override string Create(Dictionary<string, object> json)
             {
-                string result = JsonConvert.SerializeObject(json);
+                string result = System.Text.Json.JsonSerializer.Serialize(json);
                 return result;
             }
 
             public override string Create(IDictionary<string, object> json)
             {
-                string result = JsonConvert.SerializeObject(json);
+                string result = System.Text.Json.JsonSerializer.Serialize(json);
                 return result;
             }
 
             public override string Create(IReadOnlyDictionary<string, object> json)
             {
-                string result = JsonConvert.SerializeObject(json);
+                string result = System.Text.Json.JsonSerializer.Serialize(json);
                 return result;
             }
         }

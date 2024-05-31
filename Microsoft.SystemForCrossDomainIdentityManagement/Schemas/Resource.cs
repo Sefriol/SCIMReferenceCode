@@ -5,19 +5,17 @@
 namespace Microsoft.SCIM
 {
     using System;
-    using System.Runtime.Serialization;
-
-    [DataContract]
+    using System.Text.Json.Serialization;
     public abstract class Resource : Schematized
     {
-        [DataMember(Name = AttributeNames.ExternalIdentifier, IsRequired = false, EmitDefaultValue = false)]
+        [JsonPropertyName(AttributeNames.ExternalIdentifier), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public string ExternalIdentifier
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.Identifier)]
+        [JsonPropertyName(AttributeNames.Identifier)]
         public string Identifier
         {
             get;

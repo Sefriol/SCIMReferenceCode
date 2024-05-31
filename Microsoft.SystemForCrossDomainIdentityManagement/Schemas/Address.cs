@@ -4,9 +4,8 @@
 
 namespace Microsoft.SCIM
 {
-    using System.Runtime.Serialization;
+    using System.Text.Json.Serialization;
 
-    [DataContract]
     public sealed class Address : TypedItem
     {
         public const string Home = "home";
@@ -14,46 +13,46 @@ namespace Microsoft.SCIM
         public const string Untyped = "untyped";
         public const string Work = "work";
 
-        internal Address()
+        public Address()
         {
         }
 
-        [DataMember(Name = AttributeNames.Country, IsRequired = false, EmitDefaultValue = false)]
+        [JsonPropertyName(AttributeNames.Country)]
         public string Country
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.Formatted, IsRequired = false, EmitDefaultValue = false)]
+        [JsonPropertyName(AttributeNames.Formatted)]
         public string Formatted
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.Locality, IsRequired = false, EmitDefaultValue = false)]
+        [JsonPropertyName(AttributeNames.Locality)]
         public string Locality
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.PostalCode, IsRequired = false, EmitDefaultValue = false)]
+        [JsonPropertyName(AttributeNames.PostalCode)]
         public string PostalCode
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.Region, IsRequired = false, EmitDefaultValue = false)]
+        [JsonPropertyName(AttributeNames.Region)]
         public string Region
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.StreetAddress, IsRequired = false, EmitDefaultValue = false)]
+        [JsonPropertyName(AttributeNames.StreetAddress)]
         public string StreetAddress
         {
             get;

@@ -2,18 +2,19 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
 
+using System.Text.Json.Serialization;
+
 namespace Microsoft.SCIM
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Runtime.Serialization;
 
-    [DataContract]
     public abstract class BulkOperations<TOperation> : Schematized where TOperation : BulkOperation
     {
-        [DataMember(Name = ProtocolAttributeNames.Operations, Order = 2)]
-        private List<TOperation> operations;
+        [JsonPropertyName(ProtocolAttributeNames.Operations), JsonPropertyOrder(2)]
+        public List<TOperation> operations;
+
         private IReadOnlyCollection<TOperation> operationsWrapper;
 
         private object thisLock;
@@ -34,10 +35,7 @@ namespace Microsoft.SCIM
 
         public void AddOperation(TOperation operation)
         {
-            if (null == operation)
-            {
-                throw new ArgumentNullException(nameof(operation));
-            }
+            ArgumentNullException.ThrowIfNull(operation);
 
             if (string.IsNullOrWhiteSpace(operation.Identifier))
             {
@@ -45,7 +43,8 @@ namespace Microsoft.SCIM
                     SystemForCrossDomainIdentityManagementProtocolResources.ExceptionUnidentifiableOperation);
             }
 
-            bool Contains() => this.operations.Any((BulkOperation item) => string.Equals(item.Identifier, operation.Identifier,
+            bool Contains() => this.operations.Any((BulkOperation item) => string.Equals(item.Identifier,
+                operation.Identifier,
                 StringComparison.OrdinalIgnoreCase));
 
             if (!Contains())
@@ -60,12 +59,6 @@ namespace Microsoft.SCIM
             }
         }
 
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext _) => this.OnInitialized();
-
-        [OnDeserializing]
-        private void OnDeserializing(StreamingContext _) => this.OnInitialization();
-       
         private void OnInitialization()
         {
             this.thisLock = new object();

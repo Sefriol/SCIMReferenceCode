@@ -4,12 +4,9 @@
 
 namespace Microsoft.SCIM
 {
-    using System.Runtime.Serialization;
-
-    [DataContract]
     public class ElectronicMailAddress : TypedValue
     {
-        internal ElectronicMailAddress()
+        public ElectronicMailAddress()
         {
         }
 

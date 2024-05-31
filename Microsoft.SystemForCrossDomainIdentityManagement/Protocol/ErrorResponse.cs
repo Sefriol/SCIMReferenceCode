@@ -6,15 +6,14 @@ namespace Microsoft.SCIM
 {
     using System;
     using System.Net;
-    using System.Runtime.Serialization;
+    using System.Text.Json.Serialization;
 
-    [DataContract]
-    public sealed class ErrorResponse : Schematized
+    public sealed class ErrorResponse : Schematized, IJsonOnDeserializing
     {
         private ErrorType errorType;
 
-        [DataMember(Name = ProtocolAttributeNames.ErrorType)]
-        private string errorTypeValue;
+        [JsonPropertyName(ProtocolAttributeNames.ErrorType)]
+        public string errorTypeValue;
 
         private Response response;
 
@@ -24,19 +23,12 @@ namespace Microsoft.SCIM
             this.AddSchema(ProtocolSchemaIdentifiers.Version2Error);
         }
 
-        [DataMember(Name = ProtocolAttributeNames.Detail)]
-        public string Detail
-        {
-            get;
-            set;
-        }
+        [JsonPropertyName(ProtocolAttributeNames.Detail)]
+        public string Detail { get; set; }
 
         public ErrorType ErrorType
         {
-            get
-            {
-                return this.errorType;
-            }
+            get { return this.errorType; }
 
             set
             {
@@ -47,15 +39,9 @@ namespace Microsoft.SCIM
 
         public HttpStatusCode Status
         {
-            get
-            {
-                return this.response.Status;
-            }
+            get { return this.response.Status; }
 
-            set
-            {
-                this.response.Status = value;
-            }
+            set { this.response.Status = value; }
         }
 
         private void Initialize()
@@ -63,8 +49,7 @@ namespace Microsoft.SCIM
             this.response = new Response();
         }
 
-        [OnDeserializing]
-        private void OnDeserializing(StreamingContext context)
+        public new void OnDeserializing()
         {
             this.Initialize();
         }

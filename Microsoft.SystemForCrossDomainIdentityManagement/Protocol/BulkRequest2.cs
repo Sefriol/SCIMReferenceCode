@@ -4,9 +4,7 @@
 
 namespace Microsoft.SCIM
 {
-    using System.Runtime.Serialization;
-
-    [DataContract]
+    using System.Text.Json.Serialization;
     public sealed class BulkRequest2 : BulkOperations<BulkRequestOperation>
     {
         public BulkRequest2()
@@ -14,7 +12,7 @@ namespace Microsoft.SCIM
         {
         }
 
-        [DataMember(Name = ProtocolAttributeNames.FailOnErrors, Order = 1)]
+        [JsonPropertyName(ProtocolAttributeNames.FailOnErrors), JsonPropertyOrder(1)]
         public int? FailOnErrors
         {
             get;

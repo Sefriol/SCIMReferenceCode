@@ -4,19 +4,17 @@
 
 namespace Microsoft.SCIM
 {
-    using System.Runtime.Serialization;
-
-    [DataContract]
+    using System.Text.Json.Serialization;
     public abstract class TypedItem
     {
-        [DataMember(Name = AttributeNames.Type)]
+        [JsonPropertyName(AttributeNames.Type)]
         public string ItemType
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.Primary, IsRequired = false)]
+        [JsonPropertyName(AttributeNames.Primary)]
         public bool Primary
         {
             get;

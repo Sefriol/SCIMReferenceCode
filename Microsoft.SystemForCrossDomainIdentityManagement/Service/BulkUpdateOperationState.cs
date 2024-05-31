@@ -4,7 +4,6 @@
 
 namespace Microsoft.SCIM
 {
-    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -128,7 +127,7 @@ namespace Microsoft.SCIM
                     patchRequest = patchrequest2;
                     break;
                 default:
-                    dynamic operationDataJson = JsonConvert.DeserializeObject(Operation.Data.ToString());
+                    dynamic operationDataJson = System.Text.Json.JsonSerializer.Deserialize<dynamic>(Operation.Data.ToString());
                     IReadOnlyCollection<PatchOperation2Combined> patchOperations =
                         operationDataJson.Operations.ToObject<List<PatchOperation2Combined>>();
                     patchRequest = new PatchRequest2(patchOperations);

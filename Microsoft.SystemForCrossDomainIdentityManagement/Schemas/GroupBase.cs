@@ -5,19 +5,17 @@
 namespace Microsoft.SCIM
 {
     using System.Collections.Generic;
-    using System.Runtime.Serialization;
-
-    [DataContract]
+    using System.Text.Json.Serialization;
     public abstract class GroupBase : Resource
     {
-        [DataMember(Name = AttributeNames.DisplayName)]
+        [JsonPropertyName(AttributeNames.DisplayName)]
         public virtual string DisplayName
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.Members, IsRequired = false, EmitDefaultValue = false)]
+        [JsonPropertyName(AttributeNames.Members), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public virtual IEnumerable<Member> Members
         {
             get;

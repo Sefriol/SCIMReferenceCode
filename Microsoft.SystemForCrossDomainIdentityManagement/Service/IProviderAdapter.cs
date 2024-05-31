@@ -10,26 +10,26 @@ namespace Microsoft.SCIM
     {
         string SchemaIdentifier { get; }
 
-        Task<Resource> Create(HttpContext httpContext, Resource resource, string correlationIdentifier);
-        Task<Resource> Delete(HttpContext httpContext, string identifier, string correlationIdentifier);
-        Task<QueryResponse> Query(
+        Task<T> Create(HttpContext httpContext, T resource, string correlationIdentifier);
+        Task<T> Delete(HttpContext httpContext, string identifier, string correlationIdentifier);
+        Task<QueryResponse<T>> Query(
             HttpContext httpContext,
             IReadOnlyCollection<IFilter> filters,
             IReadOnlyCollection<string> requestedAttributePaths,
             IReadOnlyCollection<string> excludedAttributePaths,
             IPaginationParameters paginationParameters,
             string correlationIdentifier);
-        Task<Resource> Replace(HttpContext httpContext, Resource resource, string correlationIdentifier);
-        Task<Resource> Retrieve(
+        Task<T> Replace(HttpContext httpContext, T resource, string correlationIdentifier);
+        Task<T> Retrieve(
             HttpContext httpContext,
             string identifier,
             IReadOnlyCollection<string> requestedAttributePaths,
             IReadOnlyCollection<string> excludedAttributePaths,
             string correlationIdentifier);
-        Task<Resource> Update(
+        Task<T> Update(
             HttpContext httpContext,
             string identifier,
-            PatchRequestBase patchRequest,
+            Schematized patchRequest,
             string correlationIdentifier);
     }
 }

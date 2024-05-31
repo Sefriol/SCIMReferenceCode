@@ -7,10 +7,9 @@ namespace Microsoft.SCIM
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Runtime.Serialization;
+    using System.Text.Json.Serialization;
 
-    [DataContract]
-    public sealed class TypeScheme : Resource
+    public sealed class TypeScheme : Resource, IJsonOnDeserialized, IJsonOnDeserializing
     {
         private List<AttributeScheme> attributes;
         private IReadOnlyCollection<AttributeScheme> attributesWrapper;
@@ -29,24 +28,24 @@ namespace Microsoft.SCIM
                 };
         }
 
-        [DataMember(Name = AttributeNames.Attributes, Order = 0)]
+        [JsonPropertyName(AttributeNames.Attributes), JsonPropertyOrder(0)]
         public IReadOnlyCollection<AttributeScheme> Attributes => this.attributesWrapper;
 
-        [DataMember(Name = AttributeNames.Name)]
+        [JsonPropertyName(AttributeNames.Name), JsonInclude]
         public string Name
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.Description)]
+        [JsonPropertyName(AttributeNames.Description)]
         public string Description
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.Metadata)]
+        [JsonPropertyName(AttributeNames.Metadata)]
         public Core2Metadata Metadata
         {
             get;
@@ -55,10 +54,7 @@ namespace Microsoft.SCIM
 
         public void AddAttribute(AttributeScheme attribute)
         {
-            if (null == attribute)
-            {
-                throw new ArgumentNullException(nameof(attribute));
-            }
+            ArgumentNullException.ThrowIfNull(attribute);
 
             Func<bool> containsFunction =
                 new Func<bool>(
@@ -82,14 +78,12 @@ namespace Microsoft.SCIM
             }
         }
 
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext context)
+        public new void OnDeserialized()
         {
             this.OnInitialized();
         }
 
-        [OnDeserializing]
-        private void OnDeserializing(StreamingContext context)
+        public new void OnDeserializing()
         {
             this.OnInitialization();
         }
@@ -103,6 +97,6 @@ namespace Microsoft.SCIM
         private void OnInitialized()
         {
             this.attributesWrapper = this.attributes.AsReadOnly();
-        }  
+        }
     }
 }

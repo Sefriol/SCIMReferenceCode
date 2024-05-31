@@ -4,7 +4,7 @@ namespace Microsoft.SCIM
 {
     public interface IPatch
     {
-        PatchRequestBase PatchRequest { get; set; }
+        Schematized PatchRequest { get; set; }
         IResourceIdentifier ResourceIdentifier { get; set; }
     }
 }

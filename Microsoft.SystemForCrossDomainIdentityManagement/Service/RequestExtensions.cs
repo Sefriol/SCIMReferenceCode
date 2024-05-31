@@ -7,7 +7,7 @@ namespace Microsoft.SCIM
     using System.Net;
     using System.Net.Http;
     using System.Collections.Generic;
-    using Newtonsoft.Json;
+
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Primitives;
 
@@ -72,10 +72,7 @@ namespace Microsoft.SCIM
             this IBulkUpdateOperationContext context,
             IEnumerable<IBulkCreationOperationContext> creations)
         {
-            if (null == creations)
-            {
-                throw new ArgumentNullException(nameof(creations));
-            }
+            ArgumentNullException.ThrowIfNull(creations);
 
             if (null == context.Method)
             {
@@ -89,7 +86,7 @@ namespace Microsoft.SCIM
 
             try
             {
-                dynamic operationDataJson = JsonConvert.DeserializeObject(context.Operation.Data.ToString());
+                dynamic operationDataJson = System.Text.Json.JsonSerializer.Deserialize<dynamic>(context.Operation.Data.ToString());
                 IReadOnlyCollection<PatchOperation2Combined> patchOperations = operationDataJson.Operations.ToObject<List<PatchOperation2Combined>>();
                 PatchRequest2 patchRequest = new PatchRequest2(patchOperations);
 
@@ -127,25 +124,13 @@ namespace Microsoft.SCIM
             List<IBulkCreationOperationContext> creations,
             List<IBulkUpdateOperationContext> updates)
         {
-            if (null == operation)
-            {
-                throw new ArgumentNullException(nameof(operation));
-            }
+            ArgumentNullException.ThrowIfNull(operation);
 
-            if (null == operations)
-            {
-                throw new ArgumentNullException(nameof(operations));
-            }
+            ArgumentNullException.ThrowIfNull(operations);
 
-            if (null == creations)
-            {
-                throw new ArgumentNullException(nameof(creations));
-            }
+            ArgumentNullException.ThrowIfNull(creations);
 
-            if (null == updates)
-            {
-                throw new ArgumentNullException(nameof(updates));
-            }
+            ArgumentNullException.ThrowIfNull(updates);
 
             if (null == operation.Method)
             {

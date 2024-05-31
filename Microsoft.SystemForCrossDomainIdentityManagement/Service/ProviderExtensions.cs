@@ -9,12 +9,10 @@ namespace Microsoft.SCIM
 
     public static class ProviderExtension
     {
-        public static IReadOnlyCollection<IExtension> ReadExtensions(this IProvider provider)
+        public static IReadOnlyCollection<IExtension> ReadExtensions<T>(this IProvider<T> provider) where T : Schematized
         {
-            if(null == provider)
-            {
-                throw new ArgumentNullException(nameof(provider));
-            }
+            ArgumentNullException.ThrowIfNull(provider);
+
             IReadOnlyCollection<IExtension> result;
             try
             {
@@ -24,6 +22,7 @@ namespace Microsoft.SCIM
             {
                 result = null;
             }
+
             return result;
         }
     }

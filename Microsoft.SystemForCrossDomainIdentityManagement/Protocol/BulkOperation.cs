@@ -6,15 +6,13 @@ namespace Microsoft.SCIM
 {
     using System;
     using System.Net.Http;
-    using System.Runtime.Serialization;
-
-    [DataContract]
+    using System.Text.Json.Serialization;
     public abstract class BulkOperation
     {
         private HttpMethod method;
         private string methodName;
 
-        protected BulkOperation()
+        public BulkOperation()
         {
             this.Identifier = Guid.NewGuid().ToString();
         }
@@ -24,7 +22,7 @@ namespace Microsoft.SCIM
             this.Identifier = identifier;
         }
 
-        [DataMember(Name = ProtocolAttributeNames.BulkOperationIdentifier, Order = 1)]
+        [JsonPropertyName(ProtocolAttributeNames.BulkOperationIdentifier), JsonPropertyOrder(1)]
         public string Identifier
         {
             get;
@@ -45,10 +43,8 @@ namespace Microsoft.SCIM
             }
         }
 
-        [DataMember(Name = ProtocolAttributeNames.Method, Order = 0)]
-#pragma warning disable IDE0051 // Remove unused private members
-        private string MethodName
-#pragma warning restore IDE0051 // Remove unused private members
+        [JsonPropertyName(ProtocolAttributeNames.Method), JsonPropertyOrder(0)]
+        public string MethodName
         {
             get => this.methodName;
 

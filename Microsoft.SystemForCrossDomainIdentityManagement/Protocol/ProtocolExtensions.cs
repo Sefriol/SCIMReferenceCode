@@ -9,9 +9,10 @@ namespace Microsoft.SCIM
     using System.Linq;
     using System.Net.Http;
     using System.Text.RegularExpressions;
-    using Newtonsoft.Json;
+    using System.Text.Json;
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling", Justification = "None")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling",
+        Justification = "None")]
     public static class ProtocolExtensions
     {
         private const string BulkIdentifierPattern =
@@ -22,29 +23,26 @@ namespace Microsoft.SCIM
         private const string ExpressionGroupNameBulkIdentifier = "identifier";
         public const string MethodNameDelete = "DELETE";
         public const string MethodNamePatch = "PATCH";
+
         private static readonly Lazy<HttpMethod> MethodPatch =
             new Lazy<HttpMethod>(
                 () =>
                     new HttpMethod(ProtocolExtensions.MethodNamePatch));
+
         private static readonly Lazy<Regex> BulkIdentifierExpression =
             new Lazy<Regex>(
                 () =>
-                    new Regex(ProtocolExtensions.BulkIdentifierPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled));
+                    new Regex(ProtocolExtensions.BulkIdentifierPattern,
+                        RegexOptions.IgnoreCase | RegexOptions.Compiled));
 
         public static HttpMethod PatchMethod
         {
-            get
-            {
-                return ProtocolExtensions.MethodPatch.Value;
-            }
+            get { return ProtocolExtensions.MethodPatch.Value; }
         }
 
         public static void Apply(this Core2Group group, PatchRequest2 patch)
         {
-            if (null == group)
-            {
-                throw new ArgumentNullException(nameof(group));
-            }
+            ArgumentNullException.ThrowIfNull(group);
 
             if (null == patch)
             {
@@ -67,31 +65,30 @@ namespace Microsoft.SCIM
                 OperationValue[] values = null;
                 if (operation?.Value != null)
                 {
-                    values =
-                    JsonConvert.DeserializeObject<OperationValue[]>(
-                        operation.Value,
-                        ProtocolConstants.JsonSettings.Value);
-                }
-
-                if (values == null)
-                {
-                    string value = null;
-                    if (operation?.Value != null)
+                    try
                     {
-                        value = JsonConvert.DeserializeObject<string>(operation.Value, ProtocolConstants.JsonSettings.Value);
+                        values =
+                            System.Text.Json.JsonSerializer.Deserialize<OperationValue[]>(
+                                operation.Value,
+                                ProtocolConstants.JsonSettings.Value);
+                        foreach (OperationValue value in values)
+                        {
+                            operationInternal.AddValue(value);
+                        }
                     }
+                    // Value wasn't an array, so we'll try to deserialize it as a single value
+                    catch (JsonException)
+                    {
 
-                    OperationValue valueSingle = new OperationValue()
-                    {
-                        Value = value
-                    };
-                    operationInternal.AddValue(valueSingle);
-                }
-                else
-                {
-                    foreach(OperationValue value in values)
-                    {
-                        operationInternal.AddValue(value);
+                        string value = null;
+                        value = System.Text.Json.JsonSerializer.Deserialize<string>(operation.Value,
+                            ProtocolConstants.ScimPatchValueSettings.Value);
+
+                        OperationValue valueSingle = new OperationValue()
+                        {
+                            Value = value
+                        };
+                        operationInternal.AddValue(valueSingle);
                     }
                 }
 
@@ -134,6 +131,7 @@ namespace Microsoft.SCIM
                     {
                         group.DisplayName = value.Value;
                     }
+
                     break;
 
                 case AttributeNames.Members:
@@ -143,26 +141,28 @@ namespace Microsoft.SCIM
                         {
                             case OperationName.Add:
                                 IEnumerable<Member> membersToAdd =
-                                     operation
-                                     .Value
-                                     .Select(
-                                         (OperationValue item) =>
-                                             new Member()
-                                             {
-                                                 Value = item.Value
-                                             })
-                                     .ToArray();
+                                    operation
+                                        .Value
+                                        .Select(
+                                            (OperationValue item) =>
+                                                new Member()
+                                                {
+                                                    Value = item.Value
+                                                })
+                                        .ToArray();
 
                                 IList<Member> buffer = new List<Member>();
-                                if(null == group.Members)
+                                if (null == group.Members)
                                 {
                                     group.Members = new List<Member>();
                                 }
+
                                 foreach (Member member in membersToAdd)
                                 {
                                     //O(n) with the number of group members, so for large groups this is not optimal
                                     if (!group.Members.Any((Member item) =>
-                                            string.Equals(item.Value, member.Value, StringComparison.OrdinalIgnoreCase)))
+                                            string.Equals(item.Value, member.Value,
+                                                StringComparison.OrdinalIgnoreCase)))
                                     {
                                         buffer.Add(member);
                                     }
@@ -202,21 +202,16 @@ namespace Microsoft.SCIM
                                 break;
                         }
                     }
+
                     break;
             }
         }
 
         private static Uri ComposeTypeIdentifier(Uri baseResourceIdentifier, string path)
         {
-            if (null == baseResourceIdentifier)
-            {
-                throw new ArgumentNullException(nameof(baseResourceIdentifier));
-            }
+            ArgumentNullException.ThrowIfNull(baseResourceIdentifier);
 
-            if (null == path)
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
+            ArgumentNullException.ThrowIfNull(path);
 
             string baseResourceIdentifierValue = baseResourceIdentifier.ToString();
             string resultValue =
@@ -263,17 +258,17 @@ namespace Microsoft.SCIM
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "False analysis of 'this' parameter of an extension method")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design",
+            "CA1062:Validate arguments of public methods", MessageId = "0",
+            Justification = "False analysis of 'this' parameter of an extension method")]
         public static Uri GetResourceIdentifier(this Resource resource, Uri baseResourceIdentifier)
         {
-            if (null == baseResourceIdentifier)
-            {
-                throw new ArgumentNullException(nameof(baseResourceIdentifier));
-            }
+            ArgumentNullException.ThrowIfNull(baseResourceIdentifier);
 
             if (string.IsNullOrWhiteSpace(resource.Identifier))
             {
-                throw new InvalidOperationException(SystemForCrossDomainIdentityManagementProtocolResources.ExceptionInvalidResource);
+                throw new InvalidOperationException(SystemForCrossDomainIdentityManagementProtocolResources
+                    .ExceptionInvalidResource);
             }
 
             if (resource.TryGetIdentifier(baseResourceIdentifier, out Uri result))
@@ -291,17 +286,17 @@ namespace Microsoft.SCIM
             return result;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "False analysis of 'this' parameter of an extension method")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design",
+            "CA1062:Validate arguments of public methods", MessageId = "0",
+            Justification = "False analysis of 'this' parameter of an extension method")]
         public static Uri GetTypeIdentifier(this Schematized schematized, Uri baseResourceIdentifier)
         {
-            if (null == baseResourceIdentifier)
-            {
-                throw new ArgumentNullException(nameof(baseResourceIdentifier));
-            }
+            ArgumentNullException.ThrowIfNull(baseResourceIdentifier);
 
             if (null == schematized.Schemas)
             {
-                throw new InvalidOperationException(SystemForCrossDomainIdentityManagementProtocolResources.ExceptionInvalidResource);
+                throw new InvalidOperationException(SystemForCrossDomainIdentityManagementProtocolResources
+                    .ExceptionInvalidResource);
             }
 
             Uri result;
@@ -311,14 +306,18 @@ namespace Microsoft.SCIM
             return result;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "False analysis of 'this' parameter of an extension method")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design",
+            "CA1062:Validate arguments of public methods", MessageId = "0",
+            Justification = "False analysis of 'this' parameter of an extension method")]
         public static bool Matches(this IExtension extension, string schemaIdentifier)
         {
-            bool result = string.Equals(schemaIdentifier, extension.SchemaIdentifier, StringComparison.OrdinalIgnoreCase);
+            bool result = string.Equals(schemaIdentifier, extension.SchemaIdentifier,
+                StringComparison.OrdinalIgnoreCase);
             return result;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Justification = "None")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity",
+            Justification = "None")]
         internal static IEnumerable<ElectronicMailAddress> PatchElectronicMailAddresses(
             IEnumerable<ElectronicMailAddress> electronicMailAddresses,
             PatchOperation2 operation)
@@ -357,14 +356,14 @@ namespace Microsoft.SCIM
 
             if
             (
-                    (
-                            operation.Value != null
-                        && operation.Value.Count != 1
-                    )
+                (
+                    operation.Value != null
+                    && operation.Value.Count != 1
+                )
                 || (
-                            null == operation.Value
-                        && operation.Name != OperationName.Remove
-                    )
+                    null == operation.Value
+                    && operation.Name != OperationName.Remove
+                )
             )
             {
                 return electronicMailAddresses;
@@ -384,7 +383,7 @@ namespace Microsoft.SCIM
             string electronicMailAddressType = subAttribute.ComparisonValue;
             if
             (
-                    !string.Equals(electronicMailAddressType, ElectronicMailAddress.Home, StringComparison.Ordinal)
+                !string.Equals(electronicMailAddressType, ElectronicMailAddress.Home, StringComparison.Ordinal)
                 && !string.Equals(electronicMailAddressType, ElectronicMailAddress.Work, StringComparison.Ordinal)
             )
             {
@@ -398,9 +397,10 @@ namespace Microsoft.SCIM
                 electronicMailAddressExisting =
                     electronicMailAddress =
                         electronicMailAddresses
-                        .SingleOrDefault(
-                            (ElectronicMailAddress item) =>
-                                string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal));
+                            .SingleOrDefault(
+                                (ElectronicMailAddress item) =>
+                                    string.Equals(subAttribute.ComparisonValue, item.ItemType,
+                                        StringComparison.Ordinal));
             }
             else
             {
@@ -415,13 +415,14 @@ namespace Microsoft.SCIM
             string value = operation.Value?.Single().Value;
             if
             (
-                    value != null
+                value != null
                 && OperationName.Remove == operation.Name
                 && string.Equals(value, electronicMailAddress.Value, StringComparison.OrdinalIgnoreCase)
             )
             {
                 value = null;
             }
+
             electronicMailAddress.Value = value;
 
             IEnumerable<ElectronicMailAddress> result;
@@ -431,15 +432,17 @@ namespace Microsoft.SCIM
                 {
                     result =
                         electronicMailAddresses
-                        .Where(
-                            (ElectronicMailAddress item) =>
-                                !string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal))
-                        .ToArray();
+                            .Where(
+                                (ElectronicMailAddress item) =>
+                                    !string.Equals(subAttribute.ComparisonValue, item.ItemType,
+                                        StringComparison.Ordinal))
+                            .ToArray();
                 }
                 else
                 {
                     result = electronicMailAddresses;
                 }
+
                 return result;
             }
 
@@ -450,9 +453,9 @@ namespace Microsoft.SCIM
 
             result =
                 new ElectronicMailAddress[]
-                    {
-                        electronicMailAddress
-                    };
+                {
+                    electronicMailAddress
+                };
             if (null == electronicMailAddresses)
             {
                 return result;
@@ -498,14 +501,14 @@ namespace Microsoft.SCIM
 
             if
             (
-                    (
-                           operation.Value != null
-                        && operation.Value.Count != 1
-                    )
+                (
+                    operation.Value != null
+                    && operation.Value.Count != 1
+                )
                 || (
-                            null == operation.Value
-                        && operation.Name != OperationName.Remove
-                    )
+                    null == operation.Value
+                    && operation.Name != OperationName.Remove
+                )
             )
             {
                 return roles;
@@ -518,9 +521,10 @@ namespace Microsoft.SCIM
                 roleExisting =
                     role =
                         roles
-                        .SingleOrDefault(
-                            (Role item) =>
-                                string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal));
+                            .SingleOrDefault(
+                                (Role item) =>
+                                    string.Equals(subAttribute.ComparisonValue, item.ItemType,
+                                        StringComparison.Ordinal));
             }
             else
             {
@@ -535,13 +539,14 @@ namespace Microsoft.SCIM
             string value = operation.Value?.Single().Value;
             if
             (
-                    value != null
+                value != null
                 && OperationName.Remove == operation.Name
                 && string.Equals(value, role.Value, StringComparison.OrdinalIgnoreCase)
             )
             {
                 value = null;
             }
+
             role.Value = value;
 
             IEnumerable<Role> result;
@@ -551,15 +556,17 @@ namespace Microsoft.SCIM
                 {
                     result =
                         roles
-                        .Where(
-                            (Role item) =>
-                                !string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal))
-                        .ToArray();
+                            .Where(
+                                (Role item) =>
+                                    !string.Equals(subAttribute.ComparisonValue, item.ItemType,
+                                        StringComparison.Ordinal))
+                            .ToArray();
                 }
                 else
                 {
                     result = roles;
                 }
+
                 return result;
             }
 
@@ -570,9 +577,9 @@ namespace Microsoft.SCIM
 
             result =
                 new Role[]
-                    {
-                        role
-                    };
+                {
+                    role
+                };
 
             if (null == roles)
             {
@@ -587,9 +594,9 @@ namespace Microsoft.SCIM
         {
             IReadOnlyCollection<T> result =
                 new T[]
-                    {
-                        item
-                    };
+                {
+                    item
+                };
             return result;
         }
 
@@ -644,6 +651,7 @@ namespace Microsoft.SCIM
                 matchingExtension = null;
                 return false;
             }
+
             IReadOnlyCollection<string> schemaIdentifiers = schemaIdentifier.ToCollection();
             bool result = extensions.TryMatch(schemaIdentifiers, out matchingExtension);
             return result;
@@ -651,10 +659,7 @@ namespace Microsoft.SCIM
 
         public static bool References(this PatchRequest2Base<PatchOperation2Combined> patch, string referee)
         {
-            if (null == patch)
-            {
-                throw new ArgumentNullException(nameof(patch));
-            }
+            ArgumentNullException.ThrowIfNull(patch);
 
             if (string.IsNullOrWhiteSpace(referee))
             {
@@ -665,16 +670,15 @@ namespace Microsoft.SCIM
             return result;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "False analysis of the 'this' parameter of an extension method")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design",
+            "CA1062:Validate arguments of public methods", MessageId = "0",
+            Justification = "False analysis of the 'this' parameter of an extension method")]
         public static bool TryFindReference(
             this PatchRequest2Base<PatchOperation2Combined> patch,
             string referee,
             out IReadOnlyCollection<OperationValue> references)
         {
-            if (null == patch)
-            {
-                throw new ArgumentNullException(nameof(patch));
-            }
+            ArgumentNullException.ThrowIfNull(patch);
 
             references = null;
 
@@ -691,9 +695,9 @@ namespace Microsoft.SCIM
                 if (operation?.Value != null)
                 {
                     values =
-                    JsonConvert.DeserializeObject<OperationValue[]>(
-                        operation.Value,
-                        ProtocolConstants.JsonSettings.Value);
+                        System.Text.Json.JsonSerializer.Deserialize<OperationValue[]>(
+                            operation.Value,
+                            ProtocolConstants.JsonSettings.Value);
                 }
 
                 if (values == null)
@@ -701,7 +705,8 @@ namespace Microsoft.SCIM
                     string value = null;
                     if (operation?.Value != null)
                     {
-                        value = JsonConvert.DeserializeObject<string>(operation.Value, ProtocolConstants.JsonSettings.Value);
+                        value = System.Text.Json.JsonSerializer.Deserialize<string>(operation.Value,
+                            ProtocolConstants.JsonSettings.Value);
                     }
 
                     OperationValue valueSingle = new OperationValue()
@@ -717,7 +722,6 @@ namespace Microsoft.SCIM
                         patchOperation2Values.Add(value);
                     }
                 }
-
             }
 
             IReadOnlyCollection<OperationValue> patchOperationValues = patchOperation2Values.AsReadOnly();
@@ -730,7 +734,7 @@ namespace Microsoft.SCIM
                     value = patchOperationValue.Value;
                 }
 
-                if (string.Equals(referee, value,StringComparison.InvariantCulture))
+                if (string.Equals(referee, value, StringComparison.InvariantCulture))
                 {
                     referencesBuffer.Add(patchOperationValue);
                 }

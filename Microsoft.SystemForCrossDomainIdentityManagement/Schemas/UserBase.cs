@@ -4,12 +4,10 @@
 
 namespace Microsoft.SCIM
 {
-    using System.Runtime.Serialization;
-
-    [DataContract]
+    using System.Text.Json.Serialization;
     public abstract class UserBase : Resource
     {
-        [DataMember(Name = AttributeNames.UserName)]
+        [JsonPropertyName(AttributeNames.UserName)]
         public virtual string UserName
         {
             get;

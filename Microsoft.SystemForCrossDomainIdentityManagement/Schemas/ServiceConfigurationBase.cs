@@ -7,23 +7,23 @@ namespace Microsoft.SCIM
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Runtime.Serialization;
+    using System.Text.Json.Serialization;
 
-    [DataContract]
-    public abstract class ServiceConfigurationBase : Schematized
+    public abstract class ServiceConfigurationBase : Schematized, IJsonOnDeserialized, IJsonOnDeserializing
     {
-        [DataMember(Name = AttributeNames.AuthenticationSchemes)]
+        [JsonPropertyName(AttributeNames.AuthenticationSchemes), JsonInclude]
         private List<AuthenticationScheme> authenticationSchemes;
         private IReadOnlyCollection<AuthenticationScheme> authenticationSchemesWrapper;
 
         private object thisLock;
 
-        protected ServiceConfigurationBase()
+        public ServiceConfigurationBase()
         {
             this.OnInitialization();
             this.OnInitialized();
         }
 
+        [JsonIgnore]
         public IReadOnlyCollection<AuthenticationScheme> AuthenticationSchemes
         {
             get
@@ -32,49 +32,49 @@ namespace Microsoft.SCIM
             }
         }
 
-        [DataMember(Name = AttributeNames.Bulk)]
+        [JsonPropertyName(AttributeNames.Bulk)]
         public BulkRequestsFeature BulkRequests
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.Documentation)]
+        [JsonPropertyName(AttributeNames.Documentation)]
         public Uri DocumentationResource
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.EntityTag)]
+        [JsonPropertyName(AttributeNames.EntityTag)]
         public Feature EntityTags
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.Filter)]
+        [JsonPropertyName(AttributeNames.Filter)]
         public Feature Filtering
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.ChangePassword)]
+        [JsonPropertyName(AttributeNames.ChangePassword)]
         public Feature PasswordChange
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.Patch)]
+        [JsonPropertyName(AttributeNames.Patch)]
         public Feature Patching
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.Sort)]
+        [JsonPropertyName(AttributeNames.Sort)]
         public Feature Sorting
         {
             get;
@@ -83,10 +83,7 @@ namespace Microsoft.SCIM
 
         public void AddAuthenticationScheme(AuthenticationScheme authenticationScheme)
         {
-            if (null == authenticationScheme)
-            {
-                throw new ArgumentNullException(nameof(authenticationScheme));
-            }
+            ArgumentNullException.ThrowIfNull(authenticationScheme);
 
             if (string.IsNullOrWhiteSpace(authenticationScheme.Name))
             {
@@ -116,14 +113,12 @@ namespace Microsoft.SCIM
             }
         }
 
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext context)
+        public new void OnDeserialized()
         {
             this.OnInitialized();
         }
 
-        [OnDeserializing]
-        private void OnDeserializing(StreamingContext context)
+        public new void OnDeserializing()
         {
             this.OnInitialization();
         }

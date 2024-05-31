@@ -12,14 +12,14 @@ namespace Microsoft.SCIM
     [Route(ServiceConstants.RouteSchemas)]
     [Authorize]
     [ApiController]
-    public sealed class SchemasController : ControllerTemplate
+    public sealed class SchemasController : ControllerTemplate<Resource>
     {
-        public SchemasController(IProvider provider, IMonitor monitor)
+        public SchemasController(IProvider<Resource> provider, IMonitor monitor)
             : base(provider, monitor)
         {
         }
 
-        public ActionResult<QueryResponse> Get()
+        public ActionResult<QueryResponse<TypeScheme>> Get()
         {
             string correlationIdentifier = null;
 
@@ -31,15 +31,16 @@ namespace Microsoft.SCIM
                     return this.StatusCode((int)HttpStatusCode.InternalServerError);
                 }
 
-                IProvider provider = this.provider;
+                IProvider<Resource> provider = this.provider;
                 if (null == provider)
                 {
                     return this.StatusCode((int)HttpStatusCode.InternalServerError);
                 }
 
-                IReadOnlyCollection<Resource> resources = provider.Schema;
-                QueryResponse result = new QueryResponse(resources);
+                IReadOnlyCollection<TypeScheme> resources = provider.Schema;
+                QueryResponse<TypeScheme> result = new QueryResponse<TypeScheme>(ProtocolSchemaIdentifiers.Version2ListResponse, resources);
 
+                var test = System.Text.Json.JsonSerializer.Serialize(resources);
                 result.TotalResults =
                     result.ItemsPerPage =
                         resources.Count;

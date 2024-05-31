@@ -7,16 +7,14 @@ namespace Microsoft.SCIM
     using System;
     using System.Globalization;
     using System.Linq;
-    using System.Runtime.Serialization;
-    using Newtonsoft.Json;
+    using System.Text.Json.Serialization;
 
-    [DataContract]
-    public sealed class PatchOperation2Combined : PatchOperation2Base
+    public sealed class PatchOperation2Combined : PatchOperation2Base, IJsonOnDeserialized
     {
         private const string Template = "{0}: [{1}]";
 
-        [DataMember(Name = AttributeNames.Value, Order = 2)]
-        private object values;
+        [JsonPropertyName(AttributeNames.Value), JsonInclude, JsonPropertyOrder(2)]
+        internal object values;
 
 
         public PatchOperation2Combined()
@@ -43,11 +41,12 @@ namespace Microsoft.SCIM
             operationValue.Value = value;
 
             PatchOperation2Combined result = new PatchOperation2Combined(operationName, pathExpression);
-            result.Value = JsonConvert.SerializeObject(operationValue);
+            result.Value = System.Text.Json.JsonSerializer.Serialize(operationValue);
 
             return result;
         }
 
+        [JsonIgnore]
         public string Value
         {
             get
@@ -57,22 +56,18 @@ namespace Microsoft.SCIM
                     return null;
                 }
 
-                string result = JsonConvert.SerializeObject(this.values);
+                string result = System.Text.Json.JsonSerializer.Serialize(this.values);
                 return result;
             }
 
-            set
-            {
-                this.values = value;
-            }
+            set { this.values = value; }
         }
 
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext context)
+        public void OnDeserialized()
         {
             if (this.Value == null)
             {
-                if 
+                if
                 (
                     this?.Path?.AttributePath != null &&
                     this.Path.AttributePath.Contains(AttributeNames.Members, StringComparison.OrdinalIgnoreCase) &&

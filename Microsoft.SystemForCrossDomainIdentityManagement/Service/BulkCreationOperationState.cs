@@ -1,7 +1,7 @@
 ﻿
 namespace Microsoft.SCIM
 {
-    using Newtonsoft.Json;
+
     using System;
     using System.Collections.Generic;
     using System.Globalization;
@@ -50,7 +50,7 @@ namespace Microsoft.SCIM
                 throw new ArgumentException(invalidOperationExceptionMessage);
             }
 
-            dynamic operationDataJson = JsonConvert.DeserializeObject(operation.Data.ToString());
+            dynamic operationDataJson = System.Text.Json.JsonSerializer.Deserialize<dynamic>(operation.Data.ToString());
 
             if (null != operationDataJson.schemas)
             {

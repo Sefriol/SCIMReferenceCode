@@ -9,19 +9,16 @@ namespace Microsoft.SCIM
     [Route(ServiceConstants.RouteUsers)]
     [Authorize]
     [ApiController]
-    public sealed class UsersController : ControllerTemplate<Core2EnterpriseUser>
+    public sealed class UsersController : ControllerTemplate<Core2EnterpriseUser, IProvider<Core2EnterpriseUser>>
     {
-        public UsersController(IProvider provider, IMonitor monitor)
+        public UsersController(IProvider<Core2EnterpriseUser> provider, IMonitor monitor)
             : base(provider, monitor)
         {
         }
 
-        protected override IProviderAdapter<Core2EnterpriseUser> AdaptProvider(IProvider provider)
+        protected override IProviderAdapter<Core2EnterpriseUser> AdaptProvider(IProvider<Core2EnterpriseUser> provider)
         {
-            if (null == provider)
-            {
-                throw new ArgumentNullException(nameof(provider));
-            }
+            ArgumentNullException.ThrowIfNull(provider);
 
             IProviderAdapter<Core2EnterpriseUser> result = new Core2EnterpriseUserProviderAdapter(provider);
             return result;

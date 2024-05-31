@@ -2,11 +2,11 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
 
+
 namespace Microsoft.SCIM
 {
-    using System.Runtime.Serialization;
+    using System.Text.Json.Serialization;
 
-    [DataContract]
     public sealed class Core2Error : Schematized
     {
         public Core2Error(
@@ -19,16 +19,16 @@ namespace Microsoft.SCIM
 
             this.Detail = detail;
             this.Status = status;
-            this.ScimType = scimType != null ? scimType : null;
+            this.ScimType = scimType;
         }
 
-        [DataMember(Name = "scimType", Order = 1)] //AttributeNames.ScimType
+        [JsonPropertyName("scimType"), JsonPropertyOrder(1)] //AttributeNames.ScimType
         public string ScimType { get; set; }
 
-        [DataMember(Name = "detail", Order = 2)] //AttributeNames.Detail
+        [JsonPropertyName("detail"), JsonPropertyOrder(2)] //AttributeNames.Detail
         public string Detail { get; set; }
 
-        [DataMember(Name = "status", Order = 3)] //AttributeNames.Status
+        [JsonPropertyName("status"), JsonPropertyOrder(3)] //AttributeNames.Status
         public int Status { get; set; }
     }
 }

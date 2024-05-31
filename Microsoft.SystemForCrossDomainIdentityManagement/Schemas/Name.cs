@@ -4,40 +4,38 @@
 
 namespace Microsoft.SCIM
 {
-    using System.Runtime.Serialization;
-
-    [DataContract]
+    using System.Text.Json.Serialization;
     public sealed class Name
     {
-        [DataMember(Name = AttributeNames.Formatted, Order = 0, IsRequired = false, EmitDefaultValue = false)]
+        [JsonPropertyName(AttributeNames.Formatted), JsonPropertyOrder(0), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public string Formatted
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.FamilyName, Order = 1, IsRequired = false, EmitDefaultValue = false)]
+        [JsonPropertyName(AttributeNames.FamilyName), JsonPropertyOrder(1), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public string FamilyName
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.GivenName, Order = 1, IsRequired = false, EmitDefaultValue = false)]
+        [JsonPropertyName(AttributeNames.GivenName), JsonPropertyOrder(1), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public string GivenName
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.HonorificPrefix, Order = 1, IsRequired = false, EmitDefaultValue = false)]
+        [JsonPropertyName(AttributeNames.HonorificPrefix), JsonPropertyOrder(1), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public string HonorificPrefix
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.HonorificSuffix, Order = 1, IsRequired = false, EmitDefaultValue = false)]
+        [JsonPropertyName(AttributeNames.HonorificSuffix), JsonPropertyOrder(1), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public string HonorificSuffix
         {
             get;

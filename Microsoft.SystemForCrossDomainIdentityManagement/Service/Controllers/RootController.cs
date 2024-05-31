@@ -4,19 +4,16 @@ namespace Microsoft.SCIM
 {
     using System;
 
-    public sealed class RootController : ControllerTemplate<Resource>
+    public sealed class RootController : ControllerTemplate<Resource, IProvider<Resource>>
     {
-        public RootController(IProvider provider, IMonitor monitor)
+        public RootController(IProvider<Resource> provider, IMonitor monitor)
             : base(provider, monitor)
         {
         }
 
-        protected override IProviderAdapter<Resource> AdaptProvider(IProvider provider)
+        protected override IProviderAdapter<Resource> AdaptProvider(IProvider<Resource> provider)
         {
-            if (null == provider)
-            {
-                throw new ArgumentNullException(nameof(provider));
-            }
+            ArgumentNullException.ThrowIfNull(provider);
 
             IProviderAdapter<Resource> result = new RootProviderAdapter(provider);
             return result;

@@ -7,15 +7,14 @@ namespace Microsoft.SCIM
     using System;
     using System.Collections.Generic;
     using System.Globalization;
-    using System.Runtime.Serialization;
+    using System.Text.Json.Serialization;
 
-    [DataContract]
-    public sealed class PatchOperation2 : PatchOperation2Base
+public sealed class PatchOperation2 : PatchOperation2Base, IJsonOnDeserialized, IJsonOnDeserializing
     {
         private const string Template = "{0}: [{1}]";
 
-        [DataMember(Name = AttributeNames.Value, Order = 2)]
-        private List<OperationValue> values;
+        [JsonPropertyName(AttributeNames.Value), JsonPropertyOrder(2)]
+        public List<OperationValue> values;
         private IReadOnlyCollection<OperationValue> valuesWrapper;
 
         public PatchOperation2()
@@ -41,10 +40,7 @@ namespace Microsoft.SCIM
 
         public void AddValue(OperationValue value)
         {
-            if (null == value)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             this.values.Add(value);
         }
@@ -70,14 +66,12 @@ namespace Microsoft.SCIM
             return result;
         }
 
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext context)
+        public void OnDeserialized()
         {
             this.OnInitialized();
         }
 
-        [OnDeserializing]
-        private void OnDeserializing(StreamingContext context)
+        public void OnDeserializing()
         {
             this.OnInitialization();
         }

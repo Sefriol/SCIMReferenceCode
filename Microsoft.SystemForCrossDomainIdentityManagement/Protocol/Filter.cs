@@ -70,10 +70,7 @@ namespace Microsoft.SCIM
         public Filter(IFilter other)
             : this(other?.AttributePath, other.FilterOperator, other?.ComparisonValue)
         {
-            if (null == other)
-            {
-                throw new ArgumentNullException(nameof(other));
-            }
+            ArgumentNullException.ThrowIfNull(other);
 
             this.DataType = other.DataType;
 
@@ -304,10 +301,7 @@ namespace Microsoft.SCIM
 
         public static string ToString(IReadOnlyCollection<IFilter> filters)
         {
-            if (null == filters)
-            {
-                throw new ArgumentNullException(nameof(filters));
-            }
+            ArgumentNullException.ThrowIfNull(filters);
 
             string placeholder = Guid.NewGuid().ToString();
             string allFilters = null;

@@ -7,19 +7,19 @@ namespace Microsoft.SCIM
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Runtime.Serialization;
+    using System.Text.Json.Serialization;
 
-    [DataContract]
-    public abstract class Schematized : IJsonSerializable
+    public abstract class Schematized : IJsonSerializable, IJsonOnDeserialized, IJsonOnDeserializing
     {
-        [DataMember(Name = AttributeNames.Schemas, Order = 0)]
+        [JsonPropertyName(AttributeNames.Schemas), JsonPropertyOrder(0)]
         private List<string> schemas;
+
         private IReadOnlyCollection<string> schemasWrapper;
 
         private object thisLock;
         private IJsonSerializable serializer;
 
-        protected Schematized()
+        public Schematized()
         {
             this.OnInitialization();
             this.OnInitialized();
@@ -28,10 +28,7 @@ namespace Microsoft.SCIM
 
         public virtual IReadOnlyCollection<string> Schemas
         {
-            get
-            {
-                return this.schemasWrapper;
-            }
+            get { return this.schemasWrapper; }
         }
 
         public void AddSchema(string schemaIdentifier)
@@ -45,13 +42,13 @@ namespace Microsoft.SCIM
                 new Func<bool>(
                     () =>
                         this
-                        .schemas
-                        .Any(
-                            (string item) =>
-                                string.Equals(
-                                    item,
-                                    schemaIdentifier,
-                                    StringComparison.OrdinalIgnoreCase)));
+                            .schemas
+                            .Any(
+                                (string item) =>
+                                    string.Equals(
+                                        item,
+                                        schemaIdentifier,
+                                        StringComparison.OrdinalIgnoreCase)));
 
 
             if (!containsFunction())
@@ -75,21 +72,19 @@ namespace Microsoft.SCIM
 
             bool result =
                 this
-                .schemas
-                .Any(
-                    (string item) =>
-                        string.Equals(item, scheme, StringComparison.OrdinalIgnoreCase));
+                    .schemas
+                    .Any(
+                        (string item) =>
+                            string.Equals(item, scheme, StringComparison.OrdinalIgnoreCase));
             return result;
         }
 
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext context)
+        public void OnDeserialized()
         {
             this.OnInitialized();
         }
 
-        [OnDeserializing]
-        private void OnDeserializing(StreamingContext context)
+        public void OnDeserializing()
         {
             this.OnInitialization();
         }
@@ -114,10 +109,9 @@ namespace Microsoft.SCIM
 
         public virtual string Serialize()
         {
-            
             IDictionary<string, object> json = this.ToJson();
             string result = JsonFactory.Instance.Create(json, true);
-            
+
             return result;
         }
 

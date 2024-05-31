@@ -11,9 +11,9 @@ namespace Microsoft.SCIM
     [Route(ServiceConstants.RouteServiceConfiguration)]
     [Authorize]
     [ApiController]
-    public sealed class ServiceProviderConfigurationController : ControllerTemplate
+    public sealed class ServiceProviderConfigurationController : ControllerTemplate<Resource>
     {
-        public ServiceProviderConfigurationController(IProvider provider, IMonitor monitor)
+        public ServiceProviderConfigurationController(IProvider<Resource> provider, IMonitor monitor)
             : base(provider, monitor)
         {
         }
@@ -30,7 +30,7 @@ namespace Microsoft.SCIM
                     return this.StatusCode((int) HttpStatusCode.InternalServerError);
                 }
 
-                IProvider provider = this.provider;
+                IProvider<Resource> provider = this.provider;
                 if (null == provider)
                 {
                     return this.StatusCode((int) HttpStatusCode.InternalServerError);

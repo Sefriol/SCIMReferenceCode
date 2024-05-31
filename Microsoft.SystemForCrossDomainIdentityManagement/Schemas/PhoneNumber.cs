@@ -4,9 +4,6 @@
 
 namespace Microsoft.SCIM
 {
-    using System.Runtime.Serialization;
-
-    [DataContract]
     public class PhoneNumber : TypedValue
     {
         public const string Fax = "fax";
@@ -16,7 +13,7 @@ namespace Microsoft.SCIM
         public const string Pager = "pager";
         public const string Work = "work";
 
-        internal PhoneNumber()
+        public PhoneNumber()
         {
         }
     }

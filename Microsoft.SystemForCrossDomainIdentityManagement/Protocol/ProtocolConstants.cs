@@ -2,11 +2,11 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
 
+
 namespace Microsoft.SCIM
 {
     using System;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Serialization;
+    using System.Text.Json;
 
     public static class ProtocolConstants
     {
@@ -16,13 +16,28 @@ namespace Microsoft.SCIM
         public const string PathBulk = "Bulk";
         public const string PathWebBatchInterface = SchemaConstants.PathInterface + "/batch";
 
-        public readonly static Lazy<JsonSerializerSettings> JsonSettings =
-            new Lazy<JsonSerializerSettings>(() => ProtocolConstants.InitializeSettings());
+        public readonly static Lazy<JsonSerializerOptions> JsonSettings =
+            new Lazy<JsonSerializerOptions>(() => ProtocolConstants.InitializeSettings());
 
-        private static JsonSerializerSettings InitializeSettings()
+        public readonly static Lazy<JsonSerializerOptions> ScimPatchValueSettings =
+            new Lazy<JsonSerializerOptions>(() => ProtocolConstants.InitializeScimPatchValueSettings());
+
+        private static JsonSerializerOptions InitializeSettings()
         {
-            JsonSerializerSettings result = new JsonSerializerSettings();
-            result.Error = delegate (object sender, ErrorEventArgs args) { args.ErrorContext.Handled = true; };
+            JsonSerializerOptions result = new JsonSerializerOptions
+            {
+                AllowTrailingCommas = true
+            };
+            return result;
+        }
+
+        private static JsonSerializerOptions InitializeScimPatchValueSettings()
+        {
+            JsonSerializerOptions result = new JsonSerializerOptions
+            {
+                AllowTrailingCommas = true,
+                Converters = { new ScimPatchValueConverter() }
+            };
             return result;
         }
     }

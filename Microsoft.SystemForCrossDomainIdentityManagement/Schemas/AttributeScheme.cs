@@ -6,10 +6,9 @@ namespace Microsoft.SCIM
 {
     using System;
     using System.Collections.Generic;
-    using System.Runtime.Serialization;
     using System.Linq;
 
-    [DataContract]
+    using System.Text.Json.Serialization;
     public sealed class AttributeScheme
     {
         private AttributeDataType dataType;
@@ -51,7 +50,7 @@ namespace Microsoft.SCIM
             this.Uniqueness = Uniqueness.none;
         }
 
-        [DataMember(Name = AttributeNames.CaseExact)]
+        [JsonPropertyName(AttributeNames.CaseExact)]
         public bool CaseExact
         {
             get;
@@ -72,11 +71,8 @@ namespace Microsoft.SCIM
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Called upon serialization")]
-        [DataMember(Name = AttributeNames.Type)]
-#pragma warning disable IDE0051 // Remove unused private members
+        [JsonPropertyName(AttributeNames.Type)]
         private string DataTypeValue
-#pragma warning restore IDE0051 // Remove unused private members
         {
             get
             {
@@ -90,7 +86,7 @@ namespace Microsoft.SCIM
             }
         }
 
-        [DataMember(Name = AttributeNames.Description)]
+        [JsonPropertyName(AttributeNames.Description)]
         public string Description
         {
             get;
@@ -111,11 +107,8 @@ namespace Microsoft.SCIM
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Called upon serialization")]
-        [DataMember(Name = AttributeNames.Mutability)]
-#pragma warning disable IDE0051 // Remove unused private members
+        [JsonPropertyName(AttributeNames.Mutability)]
         private string MutabilityValue
-#pragma warning restore IDE0051 // Remove unused private members
         {
             get
             {
@@ -129,21 +122,21 @@ namespace Microsoft.SCIM
             }
         }
 
-        [DataMember(Name = AttributeNames.Name)]
+        [JsonPropertyName(AttributeNames.Name)]
         public string Name
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.Plural)]
+        [JsonPropertyName(AttributeNames.Plural)]
         public bool Plural
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.Required)]
+        [JsonPropertyName(AttributeNames.Required)]
         public bool Required
         {
             get;
@@ -164,11 +157,8 @@ namespace Microsoft.SCIM
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Called upon serialization")]
-        [DataMember(Name = AttributeNames.Returned)]
-#pragma warning disable IDE0051 // Remove unused private members
+        [JsonPropertyName(AttributeNames.Returned)]
         private string ReturnedValue
-#pragma warning restore IDE0051 // Remove unused private members
         {
             get
             {
@@ -196,11 +186,8 @@ namespace Microsoft.SCIM
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Called upon serialization")]
-        [DataMember(Name = AttributeNames.Uniqueness)]
-#pragma warning disable IDE0051 // Remove unused private members
+        [JsonPropertyName(AttributeNames.Uniqueness)]
         private string UniquenessValue
-#pragma warning restore IDE0051 // Remove unused private members
         {
             get
             {
@@ -214,15 +201,15 @@ namespace Microsoft.SCIM
             }
         }
 
-        [DataMember(Name = AttributeNames.SubAttributes)]
+        [JsonPropertyName(AttributeNames.SubAttributes)]
         public IReadOnlyCollection<AttributeScheme> SubAttributes => this.subAttributesWrapper.Count == 0 ? null : this.subAttributesWrapper;
-        
-        [DataMember(Name = AttributeNames.CanonicalValues)]
+
+        [JsonPropertyName(AttributeNames.CanonicalValues)]
         public IReadOnlyCollection<string> CanonicalValues => this.canonicalValuesWrapper.Count == 0 ? null : this.canonicalValuesWrapper;
-       
-        [DataMember(Name = AttributeNames.ReferenceTypes)]
+
+        [JsonPropertyName(AttributeNames.ReferenceTypes)]
         public IReadOnlyCollection<string> ReferenceTypes => this.referenceTypesWrapper.Count == 0 ? null : this.referenceTypesWrapper;
-        
+
         public void AddSubAttribute(AttributeScheme subAttribute)
         {
 

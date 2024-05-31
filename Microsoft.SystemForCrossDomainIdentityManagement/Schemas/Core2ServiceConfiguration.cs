@@ -4,9 +4,7 @@
 
 namespace Microsoft.SCIM
 {
-    using System.Runtime.Serialization;
-
-    [DataContract]
+    using System.Text.Json.Serialization;
     public sealed class Core2ServiceConfiguration : ServiceConfigurationBase
     {
         public Core2ServiceConfiguration(
@@ -32,7 +30,7 @@ namespace Microsoft.SCIM
             this.Sorting = new Feature(supportsSorting);
         }
 
-        [DataMember(Name = AttributeNames.Metadata)]
+        [JsonPropertyName(AttributeNames.Metadata)]
         public Core2Metadata Metadata
         {
             get;

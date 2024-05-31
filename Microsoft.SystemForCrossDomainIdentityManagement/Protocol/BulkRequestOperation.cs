@@ -8,21 +8,20 @@ namespace Microsoft.SCIM
     using System.Collections.Generic;
     using System.Linq;
     using System.Net.Http;
-    using System.Runtime.Serialization;
+    using System.Text.Json.Serialization;
 
-    [DataContract]
-    public sealed class BulkRequestOperation : BulkOperation
-    {
+public sealed class BulkRequestOperation : BulkOperation, IJsonOnDeserialized
+{
         private Uri path;
 
-        [DataMember(Name = ProtocolAttributeNames.Path, Order = 0)]
-        private string pathValue;
+        [JsonPropertyName(ProtocolAttributeNames.Path), JsonPropertyOrder(0)]
+        public string pathValue;
 
         private BulkRequestOperation()
         {
         }
 
-        [DataMember(Name = ProtocolAttributeNames.Data, Order = 4)]
+        [JsonPropertyName(ProtocolAttributeNames.Data), JsonPropertyOrder(4)]
         public object Data
         {
             get;
@@ -49,15 +48,10 @@ namespace Microsoft.SCIM
 
         public static BulkRequestOperation CreatePatchOperation(Uri resource, PatchRequest2 data)
         {
-            if (null == resource)
-            {
-                throw new ArgumentNullException(nameof(resource));
-            }
+            ArgumentNullException.ThrowIfNull(resource);
 
-            if (null == data)
-            {
-                throw new ArgumentNullException(nameof(data));
-            }
+            ArgumentNullException.ThrowIfNull(data);
+
             PatchRequest2 patchRequest = new PatchRequest2(data.Operations);
             BulkRequestOperation result = new BulkRequestOperation
             {
@@ -70,10 +64,7 @@ namespace Microsoft.SCIM
 
         public static BulkRequestOperation CreatePostOperation(Resource data)
         {
-            if (null == data)
-            {
-                throw new ArgumentNullException(nameof(data));
-            }
+            ArgumentNullException.ThrowIfNull(data);
 
             if (null == data.Schemas)
             {
@@ -162,8 +153,7 @@ namespace Microsoft.SCIM
         }
 
         private void InitializePath() => this.InitializePath(this.pathValue);
-        
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext _) => this.InitializePath();
+
+        public void OnDeserialized() => this.InitializePath();
     }
 }

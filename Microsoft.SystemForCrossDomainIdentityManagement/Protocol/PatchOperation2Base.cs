@@ -6,9 +6,7 @@ namespace Microsoft.SCIM
 {
     using System;
     using System.Globalization;
-    using System.Runtime.Serialization;
-
-    [DataContract]
+    using System.Text.Json.Serialization;
     public abstract class PatchOperation2Base
     {
         private const string Template = "{0} {1}";
@@ -16,11 +14,12 @@ namespace Microsoft.SCIM
         private OperationName name;
         private string operationName;
 
+        [JsonIgnore]
         private IPath path;
-        [DataMember(Name = ProtocolAttributeNames.Path, Order = 1)]
+        [JsonPropertyName(ProtocolAttributeNames.Path), JsonInclude, JsonPropertyOrder(1)]
         private string pathExpression;
 
-        protected PatchOperation2Base()
+        public PatchOperation2Base()
         {
         }
 
@@ -35,6 +34,7 @@ namespace Microsoft.SCIM
             this.Path = Microsoft.SCIM.Path.Create(pathExpression);
         }
 
+        [JsonIgnore]
         public OperationName Name
         {
             get
@@ -50,7 +50,7 @@ namespace Microsoft.SCIM
         }
 
         // It's the value of 'op' parameter within the json of request body.
-        [DataMember(Name = ProtocolAttributeNames.Patch2Operation, Order = 0)]
+        [JsonPropertyName(ProtocolAttributeNames.Patch2Operation), JsonPropertyOrder(0)]
         public string OperationName
         {
             get
@@ -69,6 +69,7 @@ namespace Microsoft.SCIM
             }
         }
 
+        [JsonIgnore]
         public IPath Path
         {
             get

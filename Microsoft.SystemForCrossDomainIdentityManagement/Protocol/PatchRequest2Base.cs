@@ -6,17 +6,16 @@ namespace Microsoft.SCIM
 {
     using System;
     using System.Collections.Generic;
-    using System.Runtime.Serialization;
+    using System.Text.Json.Serialization;
 
-    [DataContract]
-    public abstract class PatchRequest2Base<TOperation> : PatchRequestBase
+    public abstract class PatchRequest2Base<TOperation> : Schematized, IJsonOnDeserialized, IJsonOnDeserializing
         where TOperation : PatchOperation2Base
     {
-        [DataMember(Name = ProtocolAttributeNames.Operations, Order = 2)]
+        [JsonPropertyName(ProtocolAttributeNames.Operations), JsonPropertyOrder(2), JsonInclude]
         private List<TOperation> operationsValue;
         private IReadOnlyCollection<TOperation> operationsWrapper;
 
-        protected PatchRequest2Base()
+        public PatchRequest2Base()
         {
             this.OnInitialization();
             this.OnInitialized();
@@ -29,6 +28,7 @@ namespace Microsoft.SCIM
             this.operationsValue.AddRange(operations);
         }
 
+        [JsonIgnore]
         public IReadOnlyCollection<TOperation> Operations
         {
             get
@@ -39,22 +39,17 @@ namespace Microsoft.SCIM
 
         public void AddOperation(TOperation operation)
         {
-            if (null == operation)
-            {
-                throw new ArgumentNullException(nameof(operation));
-            }
+            ArgumentNullException.ThrowIfNull(operation);
 
             this.operationsValue.Add(operation);
         }
 
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext context)
+        public new void OnDeserialized()
         {
             this.OnInitialized();
         }
 
-        [OnDeserializing]
-        private void OnDeserializing(StreamingContext context)
+        public new void OnDeserializing()
         {
             this.OnInitialization();
         }

@@ -5,18 +5,16 @@
 namespace Microsoft.SCIM
 {
     using System;
-    using System.Runtime.Serialization;
+    using System.Text.Json.Serialization;
 
-    [DataContract]
-    public sealed class Core2ResourceType : Resource
+    public sealed class Core2ResourceType : Resource, IJsonOnDeserialized
     {
         private Uri endpoint;
 
-        [DataMember(Name = AttributeNames.Endpoint)]
-        private string endpointValue;
+        [JsonPropertyName(AttributeNames.Endpoint)]
+        public string endpointValue;
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Justification = "Serialized")]
-        [DataMember(Name = AttributeNames.Name)]
+        [JsonPropertyName(AttributeNames.Name), JsonInclude]
         private string name;
 
         public Core2ResourceType()
@@ -31,10 +29,7 @@ namespace Microsoft.SCIM
 
         public Uri Endpoint
         {
-            get
-            {
-                return this.endpoint;
-            }
+            get { return this.endpoint; }
 
             set
             {
@@ -43,19 +38,11 @@ namespace Microsoft.SCIM
             }
         }
 
-        [DataMember(Name = AttributeNames.Metadata)]
-        public Core2Metadata Metadata
-        {
-            get;
-            set;
-        }
+        [JsonPropertyName(AttributeNames.Metadata)]
+        public Core2Metadata Metadata { get; set; }
 
-        [DataMember(Name = AttributeNames.Schema)]
-        public string Schema
-        {
-            get;
-            set;
-        }
+        [JsonPropertyName(AttributeNames.Schema)]
+        public string Schema { get; set; }
 
         private void InitializeEndpoint(string value)
         {
@@ -73,14 +60,12 @@ namespace Microsoft.SCIM
             this.InitializeEndpoint(this.endpointValue);
         }
 
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext context)
+        public new void OnDeserialized()
         {
             this.InitializeEndpoint();
         }
 
-        [OnSerializing]
-        private void OnSerializing(StreamingContext context)
+        public new void OnSerializing()
         {
             this.name = this.Identifier;
         }

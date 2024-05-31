@@ -6,10 +6,10 @@ namespace Microsoft.SCIM
 {
     using System;
     using System.Net.Http;
-    
+
     internal abstract class BulkOperationContextBase<TPayload> : IBulkOperationContext<TPayload> where TPayload : class
     {
-        protected BulkOperationContextBase()
+        public BulkOperationContextBase()
         {
         }
 

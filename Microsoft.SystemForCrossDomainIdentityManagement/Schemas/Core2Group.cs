@@ -7,14 +7,13 @@ namespace Microsoft.SCIM
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
-    using System.Runtime.Serialization;
+    using System.Text.Json.Serialization;
 
-    [DataContract]
-    public class Core2Group : GroupBase
+    public class Core2Group : GroupBase, IJsonOnDeserializing
     {
         private IDictionary<string, IDictionary<string, object>> customExtension;
 
-        protected Core2Group()
+        public Core2Group()
         {
             this.AddSchema(SchemaIdentifiers.Core2Group);
             this.Metadata =
@@ -33,7 +32,7 @@ namespace Microsoft.SCIM
             }
         }
 
-        [DataMember(Name = AttributeNames.Metadata)]
+        [JsonPropertyName(AttributeNames.Metadata)]
         public Core2Metadata Metadata
         {
             get;
@@ -53,8 +52,7 @@ namespace Microsoft.SCIM
             }
         }
 
-        [OnDeserializing]
-        private void OnDeserializing(StreamingContext context)
+        public new void OnDeserializing()
         {
             this.OnInitialization();
         }

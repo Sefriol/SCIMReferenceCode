@@ -10,7 +10,7 @@ namespace Microsoft.SCIM
     using System.Net.Http;
     using System.Threading.Tasks;
 
-    public abstract class ProviderBase : IProvider
+    public abstract class ProviderBase<TResource> : IProvider<TResource> where TResource : Resource
     {
         private static readonly Lazy<BulkRequestsFeature> BulkFeatureSupport =
             new Lazy<BulkRequestsFeature>(
@@ -25,7 +25,7 @@ namespace Microsoft.SCIM
         private static readonly Lazy<ServiceConfigurationBase> ServiceConfiguration =
             new Lazy<ServiceConfigurationBase>(
                 () =>
-                    new Core2ServiceConfiguration(ProviderBase.BulkFeatureSupport.Value, false, true, false, true, false));
+                    new Core2ServiceConfiguration(ProviderBase<TResource>.BulkFeatureSupport.Value, false, true, false, true, false));
 
         private static readonly Lazy<IReadOnlyCollection<Core2ResourceType>> Types =
             new Lazy<IReadOnlyCollection<Core2ResourceType>>(
@@ -42,7 +42,7 @@ namespace Microsoft.SCIM
         {
             get
             {
-                return ProviderBase.ServiceConfiguration.Value;
+                return ProviderBase<TResource>.ServiceConfiguration.Value;
             }
         }
 
@@ -64,7 +64,7 @@ namespace Microsoft.SCIM
         {
             get
             {
-                return ProviderBase.Types.Value;
+                return ProviderBase<TResource>.Types.Value;
             }
         }
 
@@ -72,7 +72,7 @@ namespace Microsoft.SCIM
         {
             get
             {
-                return ProviderBase.TypeSchema.Value;
+                return ProviderBase<TResource>.TypeSchema.Value;
             }
         }
 
@@ -84,14 +84,11 @@ namespace Microsoft.SCIM
         //    }
         //}
 
-        public abstract Task<Resource> CreateAsync(Resource resource, string correlationIdentifier);
+        public abstract Task<TResource> CreateAsync(TResource resource, string correlationIdentifier);
 
-        public virtual async Task<Resource> CreateAsync(IRequest<Resource> request)
+        public virtual async Task<TResource> CreateAsync(IRequest<TResource> request)
         {
-            if (null == request)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
+            ArgumentNullException.ThrowIfNull(request);
 
             if (null == request.Payload)
             {
@@ -103,19 +100,16 @@ namespace Microsoft.SCIM
                 throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidRequest);
             }
 
-            Resource result = await this.CreateAsync(request.Payload, request.CorrelationIdentifier).ConfigureAwait(false);
+            TResource result = await this.CreateAsync(request.Payload, request.CorrelationIdentifier).ConfigureAwait(false);
             return result;
         }
 
-        public abstract Task<Resource> DeleteAsync(IResourceIdentifier resourceIdentifier,
+        public abstract Task<TResource> DeleteAsync(IResourceIdentifier resourceIdentifier,
             string correlationIdentifier);
 
-        public virtual async Task<Resource> DeleteAsync(IRequest<IResourceIdentifier> request)
+        public virtual async Task<TResource> DeleteAsync(IRequest<IResourceIdentifier> request)
         {
-            if (null == request)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
+            ArgumentNullException.ThrowIfNull(request);
 
             if (null == request.Payload)
             {
@@ -130,29 +124,23 @@ namespace Microsoft.SCIM
             return await this.DeleteAsync(request.Payload, request.CorrelationIdentifier).ConfigureAwait(false);
         }
 
-        public virtual async Task<QueryResponse> PaginateQueryAsync(IRequest<IQueryParameters> request)
+        public virtual async Task<QueryResponse<TResource>> PaginateQueryAsync(IRequest<IQueryParameters> request)
         {
-            if (null == request)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
+            ArgumentNullException.ThrowIfNull(request);
 
-            IReadOnlyCollection<Resource> resources = await this.QueryAsync(request).ConfigureAwait(false);
-            QueryResponse result = new QueryResponse(resources);
+            IReadOnlyCollection<TResource> resources = await this.QueryAsync(request).ConfigureAwait(false);
+            QueryResponse<TResource> result = new QueryResponse<TResource>(ProtocolSchemaIdentifiers.Version2ListResponse, resources);
             result.TotalResults =
                 result.ItemsPerPage =
                     resources.Count;
-            result.StartIndex = resources.Any() ? 1 : (int?)null;
+            result.StartIndex = resources.Count != 0 ? 1 : (int?)null;
             return result;
         }
 
 
         public  virtual async Task<BulkResponse2> ProcessAsync(IRequest<BulkRequest2> request)
         {
-            if (null == request)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
+            ArgumentNullException.ThrowIfNull(request);
 
             if (null == request.HttpContext)
             {
@@ -165,10 +153,7 @@ namespace Microsoft.SCIM
 
         public virtual async Task ProcessAsync(IBulkOperationContext operation)
         {
-            if (null == operation)
-            {
-                throw new ArgumentNullException(nameof(operation));
-            }
+            ArgumentNullException.ThrowIfNull(operation);
 
             if (!operation.TryPrepare())
             {
@@ -219,8 +204,8 @@ namespace Microsoft.SCIM
             }
             else if (HttpMethod.Post == operation.Method)
             {
-                IBulkOperationContext<Resource> context = (IBulkOperationContext<Resource>)operation;
-                Resource output = await this.CreateAsync(context.Request).ConfigureAwait(false);
+                IBulkOperationContext<TResource> context = (IBulkOperationContext<TResource>)operation;
+                TResource output = await this.CreateAsync(context.Request).ConfigureAwait(false);
                 response.Status = HttpStatusCode.Created;
                 response.Location = output.GetResourceIdentifier(context.BulkRequest.BaseResourceIdentifier);
             }
@@ -246,10 +231,7 @@ namespace Microsoft.SCIM
 
         public virtual async Task<BulkResponse2> ProcessAsync(Queue<IBulkOperationContext> operations)
         {
-            if (null == operations)
-            {
-                throw new ArgumentNullException(nameof(operations));
-            }
+            ArgumentNullException.ThrowIfNull(operations);
 
             BulkResponse2 result = new BulkResponse2();
             int countFailures = 0;
@@ -293,17 +275,14 @@ namespace Microsoft.SCIM
             return result;
         }
 
-        public virtual Task<Resource[]> QueryAsync(IQueryParameters parameters, string correlationIdentifier)
+        public virtual Task<TResource[]> QueryAsync(IQueryParameters parameters, string correlationIdentifier)
         {
             throw new NotImplementedException();
         }
 
-        public virtual async Task<Resource[]> QueryAsync(IRequest<IQueryParameters> request)
+        public virtual async Task<TResource[]> QueryAsync(IRequest<IQueryParameters> request)
         {
-            if (null == request)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
+            ArgumentNullException.ThrowIfNull(request);
 
             if (null == request.Payload)
             {
@@ -318,17 +297,14 @@ namespace Microsoft.SCIM
             return await this.QueryAsync(request.Payload, request.CorrelationIdentifier).ConfigureAwait(false);
         }
 
-        public virtual Task<Resource> ReplaceAsync(Resource resource, string correlationIdentifier)
+        public virtual Task<TResource> ReplaceAsync(TResource resource, string correlationIdentifier)
         {
             throw new NotSupportedException();
         }
 
-        public virtual async Task<Resource> ReplaceAsync(IRequest<Resource> request)
+        public virtual async Task<TResource> ReplaceAsync(IRequest<TResource> request)
         {
-            if (null == request)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
+            ArgumentNullException.ThrowIfNull(request);
 
             if (null == request.Payload)
             {
@@ -343,14 +319,12 @@ namespace Microsoft.SCIM
             return await this.ReplaceAsync(request.Payload, request.CorrelationIdentifier).ConfigureAwait(false);
         }
 
-        public abstract Task<Resource> RetrieveAsync(IResourceRetrievalParameters parameters, string correlationIdentifier);
+        public abstract Task<TResource> RetrieveAsync(IResourceRetrievalParameters parameters,
+            string correlationIdentifier);
 
-        public virtual async Task<Resource> RetrieveAsync(IRequest<IResourceRetrievalParameters> request)
+        public virtual async Task<TResource> RetrieveAsync(IRequest<IResourceRetrievalParameters> request)
         {
-            if (null == request)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
+            ArgumentNullException.ThrowIfNull(request);
 
             if (null == request.Payload)
             {
@@ -365,14 +339,11 @@ namespace Microsoft.SCIM
             return await this.RetrieveAsync(request.Payload, request.CorrelationIdentifier).ConfigureAwait(false);
         }
 
-        public abstract Task<Resource> UpdateAsync(IPatch patch, string correlationIdentifier);
+        public abstract Task<TResource> UpdateAsync(IPatch patch, string correlationIdentifier);
 
-        public virtual async Task<Resource> UpdateAsync(IRequest<IPatch> request)
+        public virtual async Task<TResource> UpdateAsync(IRequest<IPatch> request)
         {
-            if (null == request)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
+            ArgumentNullException.ThrowIfNull(request);
 
             if (null == request.Payload)
             {

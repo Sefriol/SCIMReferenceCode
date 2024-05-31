@@ -10,16 +10,16 @@ namespace Microsoft.SCIM
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Http;
 
-    public abstract class ControllerTemplate : ControllerBase
+    public abstract class ControllerTemplate<T> : ControllerBase where T : Schematized
     {
         internal const string AttributeValueIdentifier = "{identifier}";
         private const string HeaderKeyContentType = "Content-Type";
         private const string HeaderKeyLocation = "Location";
 
         internal readonly IMonitor monitor;
-        internal readonly IProvider provider;
+        internal readonly IProvider<T> provider;
 
-        internal ControllerTemplate(IProvider provider, IMonitor monitor)
+        internal ControllerTemplate(IProvider<T> provider, IMonitor monitor)
         {
             this.monitor = monitor;
             this.provider = provider;
@@ -35,17 +35,17 @@ namespace Microsoft.SCIM
                 return;
             }
 
-            if (!this.Response.Headers.ContainsKey(ControllerTemplate.HeaderKeyContentType))
+            if (!this.Response.Headers.ContainsKey(ControllerTemplate<T>.HeaderKeyContentType))
             {
-                this.Response.Headers.Add(ControllerTemplate.HeaderKeyContentType, ProtocolConstants.ContentType);
+                this.Response.Headers.Add(ControllerTemplate<T>.HeaderKeyContentType, ProtocolConstants.ContentType);
             }
 
             Uri baseResourceIdentifier = this.HttpContext.GetBaseResourceIdentifier();
             Uri resourceIdentifier = resource.GetResourceIdentifier(baseResourceIdentifier);
             string resourceLocation = resourceIdentifier.AbsoluteUri;
-            if (!this.Response.Headers.ContainsKey(ControllerTemplate.HeaderKeyLocation))
+            if (!this.Response.Headers.ContainsKey(ControllerTemplate<T>.HeaderKeyLocation))
             {
-                this.Response.Headers.Add(ControllerTemplate.HeaderKeyLocation, resourceLocation);
+                this.Response.Headers.Add(ControllerTemplate<T>.HeaderKeyLocation, resourceLocation);
             }
         }
 
@@ -70,14 +70,16 @@ namespace Microsoft.SCIM
         }
     }
 
-    public abstract class ControllerTemplate<T> : ControllerTemplate where T : Resource
+    public abstract class ControllerTemplate<T, TProvider> : ControllerTemplate<T>
+        where T : Resource
+        where TProvider : IProvider<T>
     {
-        internal ControllerTemplate(IProvider provider, IMonitor monitor)
+        internal ControllerTemplate(TProvider provider, IMonitor monitor)
             : base(provider, monitor)
         {
         }
 
-        protected abstract IProviderAdapter<T> AdaptProvider(IProvider provider);
+        protected abstract IProviderAdapter<T> AdaptProvider(IProvider<T> provider);
 
         protected virtual IProviderAdapter<T> AdaptProvider()
         {
@@ -86,7 +88,7 @@ namespace Microsoft.SCIM
         }
 
 
-        [HttpDelete(ControllerTemplate.AttributeValueIdentifier)]
+        [HttpDelete(ControllerTemplate<T>.AttributeValueIdentifier)]
         public virtual async Task<IActionResult> Delete(string identifier)
         {
             string correlationIdentifier = null;
@@ -203,7 +205,7 @@ namespace Microsoft.SCIM
             MessageId = "Get",
             Justification =
                 "The names of the methods of a controller must correspond to the names of hypertext markup verbs")]
-        public virtual async Task<ActionResult<QueryResponse>> Get()
+        public virtual async Task<ActionResult<QueryResponse<T>>> Get()
         {
             string correlationIdentifier = null;
             try
@@ -216,7 +218,7 @@ namespace Microsoft.SCIM
 
                 IResourceQuery resourceQuery = new ResourceQuery(HttpContext);
                 IProviderAdapter<T> provider = this.AdaptProvider();
-                QueryResponse result =
+                QueryResponse<T> result =
                     await provider
                         .Query(
                             httpContext,
@@ -317,12 +319,12 @@ namespace Microsoft.SCIM
             }
         }
 
-        [HttpGet(ControllerTemplate.AttributeValueIdentifier)]
+        [HttpGet(ControllerTemplate<T>.AttributeValueIdentifier)]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords",
             MessageId = "Get",
             Justification =
                 "The names of the methods of a controller must correspond to the names of hypertext markup verbs")]
-        public virtual async Task<ActionResult<Resource>> Get([FromRoute] string identifier)
+        public virtual async Task<ActionResult<T>> Get([FromRoute] string identifier)
         {
             string correlationIdentifier = null;
             try
@@ -361,7 +363,7 @@ namespace Microsoft.SCIM
                             resourceQuery.Attributes,
                             resourceQuery.ExcludedAttributes);
                     IProviderAdapter<T> provider = this.AdaptProvider();
-                    QueryResponse queryResponse =
+                    QueryResponse<T> queryResponse =
                         await provider
                             .Query(
                                 httpContext,
@@ -385,7 +387,7 @@ namespace Microsoft.SCIM
                 else
                 {
                     IProviderAdapter<T> provider = this.AdaptProvider();
-                    Resource result =
+                    T result =
                         await provider
                             .Retrieve(
                                 httpContext,
@@ -501,8 +503,8 @@ namespace Microsoft.SCIM
             }
         }
 
-        [HttpPatch(ControllerTemplate.AttributeValueIdentifier)]
-        public virtual async Task<ActionResult<Resource>> Patch(string identifier,
+        [HttpPatch(ControllerTemplate<T>.AttributeValueIdentifier)]
+        public virtual async Task<ActionResult<T>> Patch(string identifier,
             [FromBody] PatchRequest2 patchRequest)
         {
             string correlationIdentifier = null;
@@ -532,12 +534,11 @@ namespace Microsoft.SCIM
                     .ConfigureAwait(false);
 
                 // If EnterpriseUser, return HTTP code 200 and user object, otherwise HTTP code 204
-                if (provider.SchemaIdentifier == SchemaIdentifiers.Core2EnterpriseUser)
+                if (provider.SchemaIdentifier == SchemaIdentifiers.Core2EnterpriseUser || provider.SchemaIdentifier == SchemaIdentifiers.Core2Group)
                 {
                     return await this.Get(identifier).ConfigureAwait(false);
                 }
-                else
-                    return this.NoContent();
+                return this.NoContent();
             }
             catch (ArgumentException argumentException)
             {
@@ -633,7 +634,7 @@ namespace Microsoft.SCIM
         }
 
         [HttpPost]
-        public virtual async Task<ActionResult<Resource>> Post([FromBody] T resource)
+        public virtual async Task<ActionResult<T>> Post([FromBody] T resource)
         {
             string correlationIdentifier = null;
 
@@ -746,8 +747,8 @@ namespace Microsoft.SCIM
             }
         }
 
-        [HttpPut(ControllerTemplate.AttributeValueIdentifier)]
-        public virtual async Task<ActionResult<Resource>> Put([FromBody] T resource, string identifier)
+        [HttpPut(ControllerTemplate<T>.AttributeValueIdentifier)]
+        public virtual async Task<ActionResult<T>> Put([FromBody] T resource, string identifier)
         {
             string correlationIdentifier = null;
 

@@ -15,9 +15,9 @@ namespace Microsoft.SCIM
     [Route(ServiceConstants.RouteBulk)]
     [Authorize]
     [ApiController]
-    public sealed class BulkRequestController : ControllerTemplate
+    public sealed class BulkRequestController : ControllerTemplate<BulkResponse2>
     {
-        public BulkRequestController(IProvider provider, IMonitor monitor)
+        public BulkRequestController(IProvider<BulkResponse2> provider, IMonitor monitor)
             : base(provider, monitor)
         {
         }
@@ -39,7 +39,7 @@ namespace Microsoft.SCIM
                     return this.StatusCode((int)HttpStatusCode.InternalServerError);
                 }
 
-                IProvider provider = this.provider;
+                IProvider<BulkResponse2> provider = this.provider;
                 if (null == provider)
                 {
                     return this.StatusCode((int)HttpStatusCode.InternalServerError);

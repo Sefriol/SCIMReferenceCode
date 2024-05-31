@@ -5,33 +5,31 @@
 namespace Microsoft.SCIM
 {
     using System.Collections.Generic;
-    using System.Runtime.Serialization;
-
-    [DataContract]
+    using System.Text.Json.Serialization;
     public sealed class ExtensionAttributeWindowsAzureActiveDirectoryGroup
     {
-        [DataMember(Name = AttributeNames.ElectronicMailAddresses)]
+        [JsonPropertyName(AttributeNames.ElectronicMailAddresses)]
         public IEnumerable<ElectronicMailAddress> ElectronicMailAddresses
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.ExternalIdentifier)]
+        [JsonPropertyName(AttributeNames.ExternalIdentifier)]
         public string ExternalIdentifier
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.MailEnabled, IsRequired = false)]
+        [JsonPropertyName(AttributeNames.MailEnabled)]
         public bool MailEnabled
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.SecurityEnabled, IsRequired = false)]
+        [JsonPropertyName(AttributeNames.SecurityEnabled)]
         public bool SecurityEnabled
         {
             get;

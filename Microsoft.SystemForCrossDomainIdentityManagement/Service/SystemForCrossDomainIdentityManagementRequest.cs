@@ -15,10 +15,7 @@ namespace Microsoft.SCIM
             string correlationIdentifier,
             IReadOnlyCollection<IExtension> extensions)
         {
-            if (null == context)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             if (string.IsNullOrWhiteSpace(correlationIdentifier))
             {

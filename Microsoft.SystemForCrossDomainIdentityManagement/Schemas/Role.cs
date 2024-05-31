@@ -4,19 +4,17 @@
 
 namespace Microsoft.SCIM
 {
-    using System.Runtime.Serialization;
-
-    [DataContract]
+    using System.Text.Json.Serialization;
     public sealed class Role : TypedItem
     {
-        [DataMember(Name = AttributeNames.Display, IsRequired = false, EmitDefaultValue = false)]
+        [JsonPropertyName(AttributeNames.Display), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public string Display
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.Value, IsRequired = false, EmitDefaultValue = false)]
+        [JsonPropertyName(AttributeNames.Value), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public string Value
         {
             get;

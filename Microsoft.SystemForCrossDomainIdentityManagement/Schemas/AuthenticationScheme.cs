@@ -5,9 +5,7 @@
 namespace Microsoft.SCIM
 {
     using System;
-    using System.Runtime.Serialization;
-
-    [DataContract]
+    using System.Text.Json.Serialization;
     public sealed class AuthenticationScheme
     {
         private const string AuthenticationTypeResourceValueOpenStandardForAuthenticationBearerToken =
@@ -34,42 +32,42 @@ namespace Microsoft.SCIM
                 () =>
                     new Uri(AuthenticationScheme.SpecificationResourceValueOpenStandardForAuthenticationBearerToken));
 
-        [DataMember(Name = AttributeNames.Type)]
+        [JsonPropertyName(AttributeNames.Type)]
         public string AuthenticationType
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.Description)]
+        [JsonPropertyName(AttributeNames.Description)]
         public string Description
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.Documentation)]
+        [JsonPropertyName(AttributeNames.Documentation)]
         public Uri DocumentationResource
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.Name)]
+        [JsonPropertyName(AttributeNames.Name)]
         public string Name
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.Primary)]
+        [JsonPropertyName(AttributeNames.Primary)]
         public bool Primary
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.Specification)]
+        [JsonPropertyName(AttributeNames.Specification)]
         public Uri SpecificationResource
         {
             get;

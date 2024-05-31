@@ -2,21 +2,19 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
 
+using System.Text.Json;
+
 namespace Microsoft.SCIM
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Newtonsoft.Json;
 
     public static class Core2EnterpriseUserExtensions
     {
         public static void Apply(this Core2EnterpriseUser user, PatchRequest2Base<PatchOperation2> patch)
         {
-            if (null == user)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
 
             if (null == patch)
             {
@@ -36,10 +34,7 @@ namespace Microsoft.SCIM
 
         public static void Apply(this Core2EnterpriseUser user, PatchRequest2 patch)
         {
-            if (null == user)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
 
             if (null == patch)
             {
@@ -59,27 +54,26 @@ namespace Microsoft.SCIM
                     Path = operation.Path
                 };
 
-                OperationValue[] values =
-                    JsonConvert.DeserializeObject<OperationValue[]>(
-                        operation.Value,
-                        ProtocolConstants.JsonSettings.Value);
+                try
+                {
+                    OperationValue[] values =
+                        System.Text.Json.JsonSerializer.Deserialize<OperationValue[]>(
+                            operation.Value, ProtocolConstants.JsonSettings.Value);
 
-                if (values == null)
+                    foreach (OperationValue value in values)
+                    {
+                        operationInternal.AddValue(value);
+                    }
+                }
+                catch (JsonException)
                 {
                     string value =
-                        JsonConvert.DeserializeObject<string>(operation.Value, ProtocolConstants.JsonSettings.Value);
+                        System.Text.Json.JsonSerializer.Deserialize<string>(operation.Value, ProtocolConstants.ScimPatchValueSettings.Value);
                     OperationValue valueSingle = new OperationValue()
                     {
                         Value = value
                     };
                     operationInternal.AddValue(valueSingle);
-                }
-                else
-                {
-                    foreach (OperationValue value in values)
-                    {
-                        operationInternal.AddValue(value);
-                    }
                 }
 
                 user.Apply(operationInternal);

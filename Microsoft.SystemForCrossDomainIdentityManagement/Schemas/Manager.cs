@@ -4,12 +4,10 @@
 
 namespace Microsoft.SCIM
 {
-    using System.Runtime.Serialization;
-
-    [DataContract]
+    using System.Text.Json.Serialization;
     public sealed class Manager
     {
-        [DataMember(Name = AttributeNames.Value)]
+        [JsonPropertyName(AttributeNames.Value)]
         public string Value
         {
             get;

@@ -4,12 +4,10 @@
 
 namespace Microsoft.SCIM
 {
-    using System.Runtime.Serialization;
-
-    [DataContract]
+    using System.Text.Json.Serialization;
     public abstract class FeatureBase
     {
-        [DataMember(Name = AttributeNames.Supported)]
+        [JsonPropertyName(AttributeNames.Supported)]
         public bool Supported
         {
             get;

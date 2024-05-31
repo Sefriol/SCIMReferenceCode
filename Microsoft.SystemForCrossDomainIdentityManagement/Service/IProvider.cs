@@ -5,7 +5,7 @@ namespace Microsoft.SCIM
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
-    public interface IProvider
+    public interface IProvider<TResource> where TResource : Schematized
     {
         bool AcceptLargeObjects { get; set; }
         ServiceConfigurationBase Configuration { get; }
@@ -14,13 +14,13 @@ namespace Microsoft.SCIM
         IReadOnlyCollection<Core2ResourceType> ResourceTypes { get; }
         IReadOnlyCollection<TypeScheme> Schema { get; }
         //Action<IApplicationBuilder, HttpConfiguration> StartupBehavior { get; }
-        Task<Resource> CreateAsync(IRequest<Resource> request);
-        Task<Resource> DeleteAsync(IRequest<IResourceIdentifier> request);
-        Task<QueryResponse> PaginateQueryAsync(IRequest<IQueryParameters> request);
-        Task<Resource[]> QueryAsync(IRequest<IQueryParameters> request);
-        Task<Resource> ReplaceAsync(IRequest<Resource> request);
-        Task<Resource> RetrieveAsync(IRequest<IResourceRetrievalParameters> request);
-        Task<Resource> UpdateAsync(IRequest<IPatch> request);
+        Task<TResource> CreateAsync(IRequest<TResource> request);
+        Task<TResource> DeleteAsync(IRequest<IResourceIdentifier> request);
+        Task<QueryResponse<TResource>> PaginateQueryAsync(IRequest<IQueryParameters> request);
+        Task<TResource[]> QueryAsync(IRequest<IQueryParameters> request);
+        Task<TResource> ReplaceAsync(IRequest<TResource> request);
+        Task<TResource> RetrieveAsync(IRequest<IResourceRetrievalParameters> request);
+        Task<TResource> UpdateAsync(IRequest<IPatch> request);
         Task<BulkResponse2> ProcessAsync(IRequest<BulkRequest2> request);
     }
 }

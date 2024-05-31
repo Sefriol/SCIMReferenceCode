@@ -4,23 +4,21 @@
 
 namespace Microsoft.SCIM
 {
-    using System.Runtime.Serialization;
-
-    [DataContract]
+    using System.Text.Json.Serialization;
     public sealed class Member
     {
-        internal Member()
+        public Member()
         {
         }
 
-        [DataMember(Name = AttributeNames.Type, IsRequired = false, EmitDefaultValue = false)]
+        [JsonPropertyName(AttributeNames.Type), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public string TypeName
         {
             get;
             set;
         }
 
-        [DataMember(Name = AttributeNames.Value)]
+        [JsonPropertyName(AttributeNames.Value)]
         public string Value
         {
             get;

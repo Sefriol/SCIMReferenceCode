@@ -5,9 +5,7 @@
 namespace Microsoft.SCIM
 {
     using System.Collections.Generic;
-    using System.Runtime.Serialization;
 
-    [DataContract]
     public sealed class PatchRequest2 : PatchRequest2Base<PatchOperation2Combined>
     {
         public PatchRequest2()

@@ -10,7 +10,7 @@ namespace Microsoft.SCIM.WebHostSample.Provider
     using System.Threading.Tasks;
     using Microsoft.SCIM;
 
-    public class InMemoryUserProvider : ProviderBase
+    public class InMemoryUserProvider : ProviderBase<Core2EnterpriseUser>
     {
         private readonly InMemoryStorage storage;
 
@@ -19,23 +19,23 @@ namespace Microsoft.SCIM.WebHostSample.Provider
             this.storage = InMemoryStorage.Instance;
         }
 
-        public override Task<Resource> CreateAsync(Resource resource, string correlationIdentifier)
+        public override Task<Core2EnterpriseUser> CreateAsync(Core2EnterpriseUser resource, string correlationIdentifier)
         {
             if (resource.Identifier != null)
             {
                 throw new CustomHttpResponseException(HttpStatusCode.BadRequest);
             }
 
-            Core2EnterpriseUser user = resource as Core2EnterpriseUser;
+            Core2EnterpriseUser user = resource;
             if (string.IsNullOrWhiteSpace(user.UserName))
             {
                 throw new CustomHttpResponseException(HttpStatusCode.BadRequest);
             }
 
-            IEnumerable<Core2EnterpriseUser> exisitingUsers = this.storage.Users.Values;
+            IEnumerable<Core2EnterpriseUser> existingUsers = this.storage.Users.Values;
             if
             (
-                exisitingUsers.Any(
+                existingUsers.Any(
                     (Core2EnterpriseUser exisitingUser) =>
                         string.Equals(exisitingUser.UserName, user.UserName, StringComparison.Ordinal))
             )
@@ -55,7 +55,7 @@ namespace Microsoft.SCIM.WebHostSample.Provider
             return Task.FromResult(resource);
         }
 
-        public override Task<Resource> DeleteAsync(IResourceIdentifier resourceIdentifier,
+        public override Task<Core2EnterpriseUser> DeleteAsync(IResourceIdentifier resourceIdentifier,
             string correlationIdentifier)
         {
             if (string.IsNullOrWhiteSpace(resourceIdentifier?.Identifier))
@@ -69,37 +69,39 @@ namespace Microsoft.SCIM.WebHostSample.Provider
             {
                 Core2EnterpriseUser user = this.storage.Users[identifier];
                 this.storage.Users.Remove(identifier);
-                return Task.FromResult((Resource)user);
+                return Task.FromResult(user);
             }
 
             throw new CustomHttpResponseException(HttpStatusCode.NotFound);
         }
 
-        public override async Task<QueryResponse> PaginateQueryAsync(IRequest<IQueryParameters> request)
+        public override async Task<QueryResponse<Core2EnterpriseUser>> PaginateQueryAsync(IRequest<IQueryParameters> request)
         {
             if (null == request)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            IReadOnlyCollection<Resource> resources = await this.QueryAsync(request).ConfigureAwait(false);
+            IReadOnlyCollection<Core2EnterpriseUser> resources = await this.QueryAsync(request).ConfigureAwait(false);
             int totalCount = resources.Count;
             if (request.Payload.PaginationParameters != null)
             {
                 int count = request.Payload.PaginationParameters?.Count ?? 0;
-                resources = (IReadOnlyCollection<Resource>)resources.Take(count);
+                resources = (IReadOnlyCollection<Core2EnterpriseUser>)resources.Take(count);
             }
 
 
-            QueryResponse result = new QueryResponse(resources);
-            result.TotalResults = totalCount;
-            result.ItemsPerPage = resources.Count;
+            QueryResponse<Core2EnterpriseUser> result = new QueryResponse<Core2EnterpriseUser>(ProtocolSchemaIdentifiers.Version2ListResponse, resources)
+                {
+                    TotalResults = totalCount,
+                    ItemsPerPage = resources.Count,
+                    StartIndex = resources.Any() ? 1 : null
+                };
 
-            result.StartIndex = resources.Any() ? 1 : null;
             return result;
         }
 
-        public override Task<Resource[]> QueryAsync(IQueryParameters parameters, string correlationIdentifier)
+        public override Task<Core2EnterpriseUser[]> QueryAsync(IQueryParameters parameters, string correlationIdentifier)
         {
             if (parameters == null)
             {
@@ -123,7 +125,7 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                     .ExceptionInvalidParameters);
             }
 
-            IEnumerable<Resource> results;
+            IEnumerable<Core2EnterpriseUser> results;
             var predicate = PredicateBuilder.False<Core2EnterpriseUser>();
             Expression<Func<Core2EnterpriseUser, bool>> predicateAnd;
 
@@ -131,7 +133,7 @@ namespace Microsoft.SCIM.WebHostSample.Provider
             if (parameters.AlternateFilters.Count <= 0)
             {
                 results = this.storage.Users.Values.Select(
-                    (Core2EnterpriseUser user) => user as Resource);
+                    (Core2EnterpriseUser user) => user);
             }
             else
             {
@@ -279,14 +281,14 @@ namespace Microsoft.SCIM.WebHostSample.Provider
             return Task.FromResult(results.ToArray());
         }
 
-        public override Task<Resource> ReplaceAsync(Resource resource, string correlationIdentifier)
+        public override Task<Core2EnterpriseUser> ReplaceAsync(Core2EnterpriseUser resource, string correlationIdentifier)
         {
             if (resource.Identifier == null)
             {
                 throw new CustomHttpResponseException(HttpStatusCode.BadRequest);
             }
 
-            Core2EnterpriseUser user = resource as Core2EnterpriseUser;
+            Core2EnterpriseUser user = resource;
 
             if (string.IsNullOrWhiteSpace(user.UserName))
             {
@@ -321,10 +323,10 @@ namespace Microsoft.SCIM.WebHostSample.Provider
             user.Metadata.LastModified = DateTime.UtcNow;
 
             this.storage.Users[user.Identifier] = user;
-            return Task.FromResult(user as Resource);
+            return Task.FromResult(user);
         }
 
-        public override Task<Resource> RetrieveAsync(IResourceRetrievalParameters parameters,
+        public override Task<Core2EnterpriseUser> RetrieveAsync(IResourceRetrievalParameters parameters,
             string correlationIdentifier)
         {
             if (parameters == null)
@@ -348,14 +350,14 @@ namespace Microsoft.SCIM.WebHostSample.Provider
             {
                 if (this.storage.Users.TryGetValue(identifier, out Core2EnterpriseUser user))
                 {
-                    return Task.FromResult(user as Resource);
+                    return Task.FromResult(user);
                 }
             }
 
             throw new CustomHttpResponseException(HttpStatusCode.NotFound);
         }
 
-        public override Task<Resource> UpdateAsync(IPatch patch, string correlationIdentifier)
+        public override Task<Core2EnterpriseUser> UpdateAsync(IPatch patch, string correlationIdentifier)
         {
             if (null == patch)
             {
@@ -401,7 +403,7 @@ namespace Microsoft.SCIM.WebHostSample.Provider
                 throw new CustomHttpResponseException(HttpStatusCode.NotFound);
             }
 
-            return Task.FromResult<Resource>(user);
+            return Task.FromResult(user);
         }
     }
 }

@@ -7,10 +7,9 @@ namespace Microsoft.SCIM
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
-    using System.Runtime.Serialization;
+    using System.Text.Json.Serialization;
 
-    [DataContract]
-    public abstract class Core2User : UserBase
+    public abstract class Core2User : UserBase, IJsonOnDeserializing
     {
         private IDictionary<string, IDictionary<string, object>> customExtension;
 
@@ -25,124 +24,61 @@ namespace Microsoft.SCIM
             this.OnInitialization();
         }
 
-        [DataMember(Name = AttributeNames.Active)]
-        public virtual bool Active
-        {
-            get;
-            set;
-        }
+        [JsonPropertyName(AttributeNames.Active), JsonConverter(typeof(BooleanConverter))]
+        public virtual bool Active { get; set; }
 
-        [DataMember(Name = AttributeNames.Addresses, IsRequired = false, EmitDefaultValue = false)]
-        public virtual IEnumerable<Address> Addresses
-        {
-            get;
-            set;
-        }
+        [JsonPropertyName(AttributeNames.Addresses), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public virtual IEnumerable<Address> Addresses { get; set; }
 
         public virtual IReadOnlyDictionary<string, IDictionary<string, object>> CustomExtension
         {
-            get
-            {
-                return new ReadOnlyDictionary<string, IDictionary<string, object>>(this.customExtension);
-            }
+            get { return new ReadOnlyDictionary<string, IDictionary<string, object>>(this.customExtension); }
         }
 
-        [DataMember(Name = AttributeNames.DisplayName, IsRequired = false, EmitDefaultValue = false)]
-        public virtual string DisplayName
-        {
-            get;
-            set;
-        }
+        [JsonPropertyName(AttributeNames.DisplayName), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public virtual string DisplayName { get; set; }
 
-        [DataMember(Name = AttributeNames.ElectronicMailAddresses, IsRequired = false, EmitDefaultValue = false)]
-        public virtual IEnumerable<ElectronicMailAddress> ElectronicMailAddresses
-        {
-            get;
-            set;
-        }
+        [JsonPropertyName(AttributeNames.ElectronicMailAddresses), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public virtual IEnumerable<ElectronicMailAddress> ElectronicMailAddresses { get; set; }
 
-        [DataMember(Name = AttributeNames.Ims, IsRequired = false, EmitDefaultValue = false)]
-        public virtual IEnumerable<InstantMessaging> InstantMessagings
-        {
-            get;
-            set;
-        }
+        [JsonPropertyName(AttributeNames.Ims), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public virtual IEnumerable<InstantMessaging> InstantMessagings { get; set; }
 
-        [DataMember(Name = AttributeNames.Locale, IsRequired = false, EmitDefaultValue = false)]
-        public virtual string Locale
-        {
-            get;
-            set;
-        }
+        [JsonPropertyName(AttributeNames.Locale), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public virtual string Locale { get; set; }
 
-        [DataMember(Name = AttributeNames.Metadata)]
-        public virtual Core2Metadata Metadata
-        {
-            get;
-            set;
-        }
+        [JsonPropertyName(AttributeNames.Metadata)]
+        public virtual Core2Metadata Metadata { get; set; }
 
-        [DataMember(Name = AttributeNames.Name, IsRequired = false, EmitDefaultValue = false)]
-        public virtual Name Name
-        {
-            get;
-            set;
-        }
+        [JsonPropertyName(AttributeNames.Name), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public virtual Name Name { get; set; }
 
-        [DataMember(Name = AttributeNames.Nickname, IsRequired = false, EmitDefaultValue = false)]
-        public virtual string Nickname
-        {
-            get;
-            set;
-        }
+        [JsonPropertyName(AttributeNames.Nickname), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public virtual string Nickname { get; set; }
 
-        [DataMember(Name = AttributeNames.PhoneNumbers, IsRequired = false, EmitDefaultValue = false)]
-        public virtual IEnumerable<PhoneNumber> PhoneNumbers
-        {
-            get;
-            set;
-        }
+        [JsonPropertyName(AttributeNames.PhoneNumbers), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public virtual IEnumerable<PhoneNumber> PhoneNumbers { get; set; }
 
-        [DataMember(Name = AttributeNames.PreferredLanguage, IsRequired = false, EmitDefaultValue = false)]
-        public virtual string PreferredLanguage
-        {
-            get;
-            set;
-        }
+        [JsonPropertyName(AttributeNames.PreferredLanguage), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public virtual string PreferredLanguage { get; set; }
 
-        [DataMember(Name = AttributeNames.Roles, IsRequired = false, EmitDefaultValue = false)]
-        public virtual IEnumerable<Role> Roles
-        {
-            get;
-            set;
-        }
+        [JsonPropertyName(AttributeNames.Roles), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public virtual IEnumerable<Role> Roles { get; set; }
 
-        [DataMember(Name = AttributeNames.TimeZone, IsRequired = false, EmitDefaultValue = false)]
-        public virtual string TimeZone
-        {
-            get;
-            set;
-        }
+        [JsonPropertyName(AttributeNames.TimeZone), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public virtual string TimeZone { get; set; }
 
-        [DataMember(Name = AttributeNames.Title, IsRequired = false, EmitDefaultValue = false)]
-        public virtual string Title
-        {
-            get;
-            set;
-        }
+        [JsonPropertyName(AttributeNames.Title), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public virtual string Title { get; set; }
 
-        [DataMember(Name = AttributeNames.UserType, IsRequired = false, EmitDefaultValue = false)]
-        public virtual string UserType
-        {
-            get;
-            set;
-        }
+        [JsonPropertyName(AttributeNames.UserType), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public virtual string UserType { get; set; }
 
         public virtual void AddCustomAttribute(string key, object value)
         {
             if
             (
-                    key != null
+                key != null
                 && key.StartsWith(SchemaIdentifiers.PrefixExtension, StringComparison.OrdinalIgnoreCase)
                 && !key.StartsWith(SchemaIdentifiers.Core2EnterpriseUser, StringComparison.OrdinalIgnoreCase)
                 && value is Dictionary<string, object> nestedObject
@@ -152,8 +88,7 @@ namespace Microsoft.SCIM
             }
         }
 
-        [OnDeserializing]
-        private void OnDeserializing(StreamingContext context)
+        public new void OnDeserializing()
         {
             this.OnInitialization();
         }

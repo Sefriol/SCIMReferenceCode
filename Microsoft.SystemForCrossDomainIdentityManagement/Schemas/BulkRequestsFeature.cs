@@ -4,12 +4,11 @@
 
 namespace Microsoft.SCIM
 {
-    using System.Runtime.Serialization;
+    using System.Text.Json.Serialization;
 
-    [DataContract]
     public sealed class BulkRequestsFeature : FeatureBase
     {
-        private BulkRequestsFeature()
+        public BulkRequestsFeature()
         {
         }
 
@@ -19,14 +18,14 @@ namespace Microsoft.SCIM
             private set;
         }
 
-        [DataMember(Name = AttributeNames.MaximumOperations)]
+        [JsonPropertyName(AttributeNames.MaximumOperations)]
         public int MaximumOperations
         {
             get;
             private set;
         }
 
-        [DataMember(Name = AttributeNames.MaximumPayloadSize)]
+        [JsonPropertyName(AttributeNames.MaximumPayloadSize)]
         public int MaximumPayloadSize
         {
             get;

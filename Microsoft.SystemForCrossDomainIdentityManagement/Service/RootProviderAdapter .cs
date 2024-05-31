@@ -10,7 +10,7 @@ namespace Microsoft.SCIM
 
     internal class RootProviderAdapter : ProviderAdapterTemplate<Resource>
     {
-        public RootProviderAdapter(IProvider provider)
+        public RootProviderAdapter(IProvider<Resource> provider)
             : base(provider)
         {
         }
@@ -65,7 +65,7 @@ namespace Microsoft.SCIM
         public override Task<Resource> Update(
             HttpContext httpContext,
             string identifier,
-            PatchRequestBase patchRequest,
+            Schematized patchRequest,
             string correlationIdentifier)
         {
             throw new NotImplementedException();

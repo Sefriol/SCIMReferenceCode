@@ -4,9 +4,6 @@
 
 namespace Microsoft.SCIM
 {
-    using System.Runtime.Serialization;
-
-    [DataContract]
     public sealed class Feature : FeatureBase
     {
         public Feature(bool supported)

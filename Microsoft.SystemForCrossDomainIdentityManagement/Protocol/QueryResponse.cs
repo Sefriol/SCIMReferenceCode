@@ -7,12 +7,11 @@ namespace Microsoft.SCIM
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Runtime.Serialization;
+    using System.Text.Json.Serialization;
 
-    [DataContract]
-    public sealed class QueryResponse : Schematized
+    public class QueryResponse : Schematized
     {
-        [DataMember(Name = ProtocolAttributeNames.Resources, Order = 3)]
+        [JsonPropertyName(ProtocolAttributeNames.Resources), JsonInclude, JsonPropertyOrder(3)]
         private Resource[] resources = null;
 
         public QueryResponse()
@@ -36,50 +35,36 @@ namespace Microsoft.SCIM
             this.resources = resources.ToArray();
         }
 
-        [DataMember(Name = ProtocolAttributeNames.ItemsPerPage, Order = 1)]
-        public int ItemsPerPage
-        {
-            get;
-            set;
-        }
+        [JsonPropertyName(ProtocolAttributeNames.ItemsPerPage), JsonPropertyOrder(1)]
+        public int ItemsPerPage { get; set; }
 
+        [JsonIgnore]
         public IEnumerable<Resource> Resources
         {
-            get
-            {
-                return this.resources;
-            }
+            get { return this.resources; }
 
             set
             {
                 if (null == value)
                 {
-                    throw new InvalidOperationException(SystemForCrossDomainIdentityManagementProtocolResources.ExceptionInvalidValue);
+                    throw new InvalidOperationException(SystemForCrossDomainIdentityManagementProtocolResources
+                        .ExceptionInvalidValue);
                 }
 
                 this.resources = value.ToArray();
             }
         }
 
-        [DataMember(Name = ProtocolAttributeNames.StartIndex, Order = 2)]
-        public int? StartIndex
-        {
-            get;
-            set;
-        }
+        [JsonPropertyName(ProtocolAttributeNames.StartIndex), JsonPropertyOrder(2)]
+        public int? StartIndex { get; set; }
 
-        [DataMember(Name = ProtocolAttributeNames.TotalResults, Order = 0)]
-        public int TotalResults
-        {
-            get;
-            set;
-        }
+        [JsonPropertyName(ProtocolAttributeNames.TotalResults), JsonPropertyOrder(0)]
+        public int TotalResults { get; set; }
     }
 
-    [DataContract]
-    public sealed class QueryResponse<TResource> : Schematized where TResource : Resource
+    public sealed class QueryResponse<TResource> : Schematized where TResource : Schematized
     {
-        [DataMember(Name = ProtocolAttributeNames.Resources, Order = 3)]
+        [JsonPropertyName(ProtocolAttributeNames.Resources), JsonInclude, JsonPropertyOrder(3)]
         private TResource[] resources;
 
         public QueryResponse(string schemaIdentifier)
@@ -109,46 +94,33 @@ namespace Microsoft.SCIM
             this.resources = resources.ToArray();
         }
 
-        [DataMember(Name = ProtocolAttributeNames.ItemsPerPage, Order = 1)]
-        public int ItemsPerPage
-        {
-            get;
-            set;
-        }
+        [JsonPropertyName(ProtocolAttributeNames.ItemsPerPage), JsonPropertyOrder(1)]
+        public int ItemsPerPage { get; set; }
 
+        [JsonIgnore]
         public IEnumerable<TResource> Resources
         {
-            get
-            {
-                return this.resources;
-            }
+            get { return this.resources; }
 
             set
             {
                 if (null == value)
                 {
-                    throw new InvalidOperationException(SystemForCrossDomainIdentityManagementProtocolResources.ExceptionInvalidValue);
+                    throw new InvalidOperationException(SystemForCrossDomainIdentityManagementProtocolResources
+                        .ExceptionInvalidValue);
                 }
+
                 this.resources = value.ToArray();
             }
         }
 
-        [DataMember(Name = ProtocolAttributeNames.StartIndex, Order = 2)]
-        public int? StartIndex
-        {
-            get;
-            set;
-        }
+        [JsonPropertyName(ProtocolAttributeNames.StartIndex), JsonPropertyOrder(2)]
+        public int? StartIndex { get; set; }
 
-        [DataMember(Name = ProtocolAttributeNames.TotalResults, Order = 0)]
-        public int TotalResults
-        {
-            get;
-            set;
-        }
+        [JsonPropertyName(ProtocolAttributeNames.TotalResults), JsonPropertyOrder(0)]
+        public int TotalResults { get; set; }
 
-        [OnDeserializing]
-        private void OnDeserializing(StreamingContext context)
+        public new void OnDeserializing()
         {
             this.OnInitialization();
         }

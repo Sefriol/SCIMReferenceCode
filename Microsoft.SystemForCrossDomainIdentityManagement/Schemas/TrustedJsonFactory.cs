@@ -5,39 +5,38 @@
 namespace Microsoft.SCIM
 {
     using System.Collections.Generic;
-    using Newtonsoft.Json;
 
     public class TrustedJsonFactory : JsonFactory
     {
         public override Dictionary<string, object> Create(string json)
         {
             Dictionary<string, object> result =
-                (Dictionary<string, object>)JsonConvert.DeserializeObject(
+                System.Text.Json.JsonSerializer.Deserialize<Dictionary<string,object>>(
                     json);
             return result;
         }
 
         public override string Create(string[] json)
         {
-            string result = JsonConvert.SerializeObject(json);
+            string result = System.Text.Json.JsonSerializer.Serialize(json);
             return result;
         }
 
         public override string Create(Dictionary<string, object> json)
         {
-            string result = JsonConvert.SerializeObject(json);
+            string result = System.Text.Json.JsonSerializer.Serialize(json);
             return result;
         }
 
         public override string Create(IDictionary<string, object> json)
         {
-            string result = JsonConvert.SerializeObject(json);
+            string result = System.Text.Json.JsonSerializer.Serialize(json);
             return result;
         }
 
         public override string Create(IReadOnlyDictionary<string, object> json)
         {
-            string result = JsonConvert.SerializeObject(json);
+            string result = System.Text.Json.JsonSerializer.Serialize(json);
             return result;
         }
     }
